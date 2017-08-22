@@ -2,7 +2,7 @@ package bblfsh
 
 import (
 	"errors"
-	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/bblfsh/sdk/uast"
@@ -13,74 +13,76 @@ import (
 // #include "bindings.h"
 import "C"
 
+var findMutex sync.Mutex
+var pool cstringPool
+
 func init() {
 	C.create_go_node_api()
 }
 
-func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
-	cquery := C.CString(xpath)
-	defer C.free(unsafe.Pointer(cquery))
+func nodeToPtr(node *uast.Node) C.uintptr_t {
+	return C.uintptr_t(uintptr(unsafe.Pointer(node)))
+}
 
-	ptr := C.uintptr_t(uintptr(unsafe.Pointer(node)))
+func ptrToNode(ptr C.uintptr_t) *uast.Node {
+	return (*uast.Node)(unsafe.Pointer(uintptr(ptr)))
+}
+
+// Find takes a `*uast.Node` and a xpath query and filters the tree,
+// returning the list of nodes that satisfy the given query.
+// Find is thread-safe but not current by an internal global lock.
+func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
+	// Find is not thread-safe bacuase of the underlining C API
+	findMutex.Lock()
+	defer findMutex.Unlock()
+
+	// convert xpath string to a NULL-terminated c string
+	cquery := pool.getCPtr(xpath)
+
+	// Make sure we release the pool of strings
+	defer pool.release()
+
+	ptr := nodeToPtr(node)
 	if C._api_find(ptr, cquery) != 0 {
-		return nil, errors.New("error")
+		return nil, errors.New("error: node_api_find() failed")
 	}
 
 	nu := int(C._api_get_nu_results())
 	results := make([]*uast.Node, nu)
 	for i := 0; i < nu; i++ {
-		results[i] = (*uast.Node)(unsafe.Pointer(uintptr(C._api_get_result(C.uint(i)))))
+		results[i] = ptrToNode(C._api_get_result(C.uint(i)))
 	}
 	return results, nil
 }
 
-func readNode(ptr unsafe.Pointer) *uast.Node {
-	return (*uast.Node)(ptr)
-}
-
-func readAttribute(ptr unsafe.Pointer, attribute string) reflect.Value {
-	obj := *((*interface{})(ptr))
-	value := reflect.ValueOf(obj)
-	if value.Kind() == reflect.Ptr {
-		value = value.Elem()
-	}
-	value = value.FieldByName(attribute)
-	return value
-}
-
 //export goGetInternalType
-func goGetInternalType(ptr unsafe.Pointer) *C.char {
-	return C.CString(readNode(ptr).InternalType)
-}
-
-//export goGetPropertiesSize
-func goGetPropertiesSize(ptr unsafe.Pointer) C.int {
-	return 0
+func goGetInternalType(ptr C.uintptr_t) *C.char {
+	return pool.getCPtr(ptrToNode(ptr).InternalType)
 }
 
 //export goGetToken
-func goGetToken(ptr unsafe.Pointer) *C.char {
-	return C.CString(readNode(ptr).Token)
+func goGetToken(ptr C.uintptr_t) *C.char {
+	return pool.getCPtr(ptrToNode(ptr).Token)
 }
 
 //export goGetChildrenSize
-func goGetChildrenSize(ptr unsafe.Pointer) C.int {
-	return C.int(len(readNode(ptr).Children))
+func goGetChildrenSize(ptr C.uintptr_t) C.int {
+	return C.int(len(ptrToNode(ptr).Children))
 }
 
 //export goGetChild
-func goGetChild(ptr unsafe.Pointer, index C.int) C.uintptr_t {
-	child := readNode(ptr).Children[int(index)]
-	return C.uintptr_t(uintptr(unsafe.Pointer(child)))
+func goGetChild(ptr C.uintptr_t, index C.int) C.uintptr_t {
+	child := ptrToNode(ptr).Children[int(index)]
+	return nodeToPtr(child)
 }
 
 //export goGetRolesSize
-func goGetRolesSize(ptr unsafe.Pointer) C.int {
-	return C.int(len(readNode(ptr).Roles))
+func goGetRolesSize(ptr C.uintptr_t) C.int {
+	return C.int(len(ptrToNode(ptr).Roles))
 }
 
 //export goGetRole
-func goGetRole(ptr unsafe.Pointer, index C.int) C.uint16_t {
-	role := readNode(ptr).Roles[int(index)]
+func goGetRole(ptr C.uintptr_t, index C.int) C.uint16_t {
+	role := ptrToNode(ptr).Roles[int(index)]
 	return C.uint16_t(role)
 }

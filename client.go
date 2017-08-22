@@ -7,10 +7,12 @@ import (
 	"google.golang.org/grpc"
 )
 
+// BblfshClient holds the public client API to interact with the babelfish server.
 type BblfshClient struct {
 	client protocol.ProtocolServiceClient
 }
 
+// NewBblfshClient returns a new babelfish client given a server endpoint
 func NewBblfshClient(endpoint string) (*BblfshClient, error) {
 	conn, err := grpc.Dial(endpoint, grpc.WithTimeout(time.Second*2), grpc.WithInsecure())
 	if err != nil {
@@ -21,6 +23,6 @@ func NewBblfshClient(endpoint string) (*BblfshClient, error) {
 	}, nil
 }
 
-func (c *BblfshClient) Parse() *ParseRequest {
+func (c *BblfshClient) NewParseRequest() *ParseRequest {
 	return &ParseRequest{client: c}
 }

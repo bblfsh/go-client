@@ -14,7 +14,7 @@ var query = flag.String("q", "", "xpath expression")
 func main() {
 	flag.Parse()
 	if *filename == "" {
-		fmt.Println("filename was not provided. Use the -f flag\n")
+		fmt.Println("filename was not provided. Use the -f flag")
 		return
 	}
 
@@ -22,10 +22,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	res, err := client.Parse().ReadFile(*filename).Do()
+
+	res, err := client.NewParseRequest().ReadFile(*filename).Do()
 	if err != nil {
 		panic(err)
 	}
+
 	if *query == "" {
 		fmt.Println(res.UAST)
 	} else {
