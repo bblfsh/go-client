@@ -4,8 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/bblfsh/go-client"
-	"github.com/bblfsh/sdk/uast"
+	"github.com/bblfsh/client-go"
 )
 
 var endpoint = flag.String("e", "localhost:9432", "endpoint of the babelfish server")
@@ -31,9 +30,8 @@ func main() {
 		fmt.Println(res.UAST)
 	} else {
 		results, _ := bblfsh.Find(res.UAST, *query)
-		for i, r := range results {
+		for i, node := range results {
 			fmt.Println("-", i+1, "----------------------")
-			node := r.(uast.Node)
 			fmt.Println(node.String())
 		}
 	}
