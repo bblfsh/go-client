@@ -8,7 +8,7 @@ type cstringPool struct {
 	pointers []unsafe.Pointer
 }
 
-func (pool *cstringPool) getCPtr(str string) *C.char {
+func (pool *cstringPool) getCstring(str string) *C.char {
 	ptr := C.CString(str)
 	pool.pointers = append(pool.pointers, unsafe.Pointer(ptr))
 	return ptr

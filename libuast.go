@@ -38,7 +38,7 @@ func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	defer findMutex.Unlock()
 
 	// convert xpath string to a NULL-terminated c string
-	cquery := pool.getCPtr(xpath)
+	cquery := pool.getCstring(xpath)
 
 	// Make sure we release the pool of strings
 	defer pool.release()
@@ -52,7 +52,7 @@ func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, errors.New("error: node_api_find() failed")
 	}
 
-	nu := int(C._api_get_nu_results())
+	nu := int(C._api_get_len())
 	results := make([]*uast.Node, nu)
 	for i := 0; i < nu; i++ {
 		results[i] = ptrToNode(C._api_get_result(C.uint(i)))
@@ -62,12 +62,12 @@ func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
 
 //export goGetInternalType
 func goGetInternalType(ptr C.uintptr_t) *C.char {
-	return pool.getCPtr(ptrToNode(ptr).InternalType)
+	return pool.getCstring(ptrToNode(ptr).InternalType)
 }
 
 //export goGetToken
 func goGetToken(ptr C.uintptr_t) *C.char {
-	return pool.getCPtr(ptrToNode(ptr).Token)
+	return pool.getCstring(ptrToNode(ptr).Token)
 }
 
 //export goGetChildrenSize

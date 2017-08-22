@@ -4,17 +4,14 @@ Go-client allows to easily comunicate with the Babelfish server to parse the any
 It's also integrated with libuast so it is possible to run xpath queries agains the UAST in an idiomatic way.
 
 
-
 ## Installation
 
 ### Dependencies
 
-- libuast
+- libuast ( https://github.com/bblfsh/libuast )
 
 ### Go library
+
 ```
 go get github.com/bblfsh/client-go
 ```
-
-
-
