@@ -2,6 +2,7 @@ package bblfsh
 
 import (
 	"errors"
+	"runtime/debug"
 	"sync"
 	"unsafe"
 
@@ -41,6 +42,10 @@ func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
 
 	// Make sure we release the pool of strings
 	defer pool.release()
+
+	// stop GC
+	gcpercent := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(gcpercent)
 
 	ptr := nodeToPtr(node)
 	if C._api_find(ptr, cquery) != 0 {
