@@ -31,7 +31,7 @@ func main() {
 	if *query == "" {
 		fmt.Println(res.UAST)
 	} else {
-		results, _ := bblfsh.Find(res.UAST, *query)
+		results, _ := bblfsh.Filter(res.UAST, *query)
 		for i, node := range results {
 			fmt.Println("-", i+1, "----------------------")
 			fmt.Println(node.String())

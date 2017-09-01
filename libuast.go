@@ -18,7 +18,7 @@ var findMutex sync.Mutex
 var pool cstringPool
 
 func init() {
-	C.create_go_node_api()
+	C.CreateUast()
 }
 
 func nodeToPtr(node *uast.Node) C.uintptr_t {
@@ -29,15 +29,15 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 	return (*uast.Node)(unsafe.Pointer(uintptr(ptr)))
 }
 
-// Find takes a `*uast.Node` and a xpath query and filters the tree,
+// Filter takes a `*uast.Node` and a xpath query and filters the tree,
 // returning the list of nodes that satisfy the given query.
-// Find is thread-safe but not current by an internal global lock.
-func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
-	// Find is not thread-safe bacuase of the underlining C API
+// Filter is thread-safe but not current by an internal global lock.
+func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
+	// Find is not thread-safe bacause of the underlining C API
 	findMutex.Lock()
 	defer findMutex.Unlock()
 
-	// convert xpath string to a NULL-terminated c string
+	// convert go string to C string
 	cquery := pool.getCstring(xpath)
 
 	// Make sure we release the pool of strings
@@ -48,14 +48,14 @@ func Find(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	defer debug.SetGCPercent(gcpercent)
 
 	ptr := nodeToPtr(node)
-	if C._api_find(ptr, cquery) != 0 {
-		return nil, errors.New("error: node_api_find() failed")
+	if C.Filter(ptr, cquery) != 0 {
+		return nil, errors.New("error: UastFilter() failed")
 	}
 
-	nu := int(C._api_get_len())
+	nu := int(C.Size())
 	results := make([]*uast.Node, nu)
 	for i := 0; i < nu; i++ {
-		results[i] = ptrToNode(C._api_get_result(C.uint(i)))
+		results[i] = ptrToNode(C.At(C.int(i)))
 	}
 	return results, nil
 }
