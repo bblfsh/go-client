@@ -1,5 +1,8 @@
-#ifndef _CLIENT_GO_BINDINGS_H_
-#define _CLIENT_GO_BINDINGS_H_
+#ifndef CLIENT_GO_BINDINGS_H_
+#define CLIENT_GO_BINDINGS_H_
+
+#include <stdint.h>
+#include <stdlib.h>
 
 #include <libuast/uast.h>
 
@@ -11,55 +14,55 @@ extern uintptr_t goGetChild(uintptr_t, int);
 extern int goGetRolesSize(uintptr_t);
 extern uint16_t goGetRole(uintptr_t, int);
 
-static const char *get_internal_type(const void *node) {
+static const char *InternalType(const void *node) {
   return goGetInternalType((uintptr_t)node);
 }
 
-static const char *get_token(const void *node) {
+static const char *Token(const void *node) {
   return goGetToken((uintptr_t)node);
 }
 
-static int get_children_size(const void *node) {
+static int ChildrenSize(const void *node) {
   return goGetChildrenSize((uintptr_t)node);
 }
 
-static void *get_child(const void *data, int index) {
+static void *ChildAt(const void *data, int index) {
   return (void*)goGetChild((uintptr_t)data, index);
 }
 
-static int get_roles_size(const void *node) {
+static int RolesSize(const void *node) {
   return goGetRolesSize((uintptr_t)node);
 }
 
-static uint16_t get_role(const void *node, int index) {
+static uint16_t RoleAt(const void *node, int index) {
   return goGetRole((uintptr_t)node, index);
 }
 
-static node_api *api;
-static find_ctx *ctx;
+static Uast *ctx;
+static Nodes *nodes;
 
-static void create_go_node_api() {
-  api = new_node_api((node_iface){
-      .internal_type = get_internal_type,
-      .token = get_token,
-      .children_size = get_children_size,
-      .children = get_child,
-      .roles_size = get_roles_size,
-      .roles = get_role,
+static void CreateUast() {
+  ctx = UastNew((NodeIface){
+      .InternalType = InternalType,
+      .Token = Token,
+      .ChildrenSize = ChildrenSize,
+      .ChildAt = ChildAt,
+      .RolesSize = RolesSize,
+      .RoleAt = RoleAt,
   });
-  ctx = new_find_ctx();
 }
 
-static int _api_find(uintptr_t node_ptr, const char *query) {
-  return node_api_find(api, ctx, (void*)node_ptr, query);
+static int Filter(uintptr_t node_ptr, const char *query) {
+  nodes = UastFilter(ctx, (void*)node_ptr, query);
+  return nodes != NULL;
 }
 
-static int _api_get_len() {
-  return find_ctx_get_len(ctx);
+static int Size() {
+  return NodesSize(nodes);
 }
 
-static uintptr_t _api_get_result(unsigned int i) {
-  return (uintptr_t)find_ctx_get(ctx, i);
+static uintptr_t At(int i) {
+  return (uintptr_t)NodeAt(nodes, i);
 }
 
-#endif // _CLIENT_GO_BINDINGS_H_
+#endif // CLIENT_GO_BINDINGS_H_
