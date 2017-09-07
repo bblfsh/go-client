@@ -1,13 +1,13 @@
 LIBUAST_VERSION=0.2.0
 
 GO_CMD = go
-GO_BUILD = $(GO_CMD) get
+GO_BUILD = $(GO_CMD) get -t -v
 GO_CLEAN = $(GO_CMD) clean
 GO_TEST = $(GO_CMD) test -v
 
 .PHONY: all clean deps build test
 
-all: build
+all: deps build
 
 clean:
 	find ./ -name '*.[h,c]' ! -name 'bindings.h' -exec rm -f {} +
@@ -18,8 +18,8 @@ deps:
 	mv libuast-v$(LIBUAST_VERSION)/src/* .
 	rm -rf libuast-v$(LIBUAST_VERSION)
 
-build: deps
+build:
 	$(GO_BUILD) ./...
 
-test: build
+test:
 	$(GO_TEST) ./...
