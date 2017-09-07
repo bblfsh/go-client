@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"path"
 
-	"github.com/bblfsh/sdk/protocol"
+	"gopkg.in/bblfsh/sdk.v0/protocol"
 )
 
 // ParseRequest is a placeholder for the parse requests performed by the library

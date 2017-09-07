@@ -3,7 +3,7 @@ package bblfsh
 import (
 	"time"
 
-	"github.com/bblfsh/sdk/protocol"
+	"gopkg.in/bblfsh/sdk.v0/protocol"
 	"google.golang.org/grpc"
 )
 

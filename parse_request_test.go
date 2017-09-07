@@ -1,7 +1,7 @@
 package bblfsh
 
 import "testing"
-import "github.com/bblfsh/sdk/protocol"
+import "gopkg.in/bblfsh/sdk.v0/protocol"
 import "github.com/stretchr/testify/require"
 
 func TestParseRequestConfiguration(t *testing.T) {

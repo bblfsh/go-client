@@ -6,7 +6,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"github.com/bblfsh/sdk/uast"
+	"gopkg.in/bblfsh/sdk.v0/uast"
 )
 
 // #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
