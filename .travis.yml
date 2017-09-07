@@ -6,8 +6,11 @@ go:
   - 1.8.x
   - master
 
+before_install:
+  - make deps
+
 install:
-  - go get .
+  - make build
 
 script:
-  - go test ./...
+  - make test

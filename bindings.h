@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <libuast/uast.h>
+#include "uast.h"
 
 extern char* goGetInternalType(uintptr_t);
 extern int goGetPropertiesSize(uintptr_t);
