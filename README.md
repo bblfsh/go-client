@@ -7,14 +7,8 @@ and to analyse UASTs with the functionality provided by [libuast](https://github
 
 ## Installation
 
-### Dependencies
-
-- [libuast](https://github.com/bblfsh/libuast)
-
-### Go library
-
 ```
-go get .
+$ make
 ```
 
 ## Usage
@@ -23,7 +17,6 @@ Users of this library will want use it as basis for their own code analysis,
 but a standalone app is also provided to easily give a try to its features:
 
 ```
-$ go get ./...
 $ cli -e localhost:9432 -f sample.py -q "/compilation_unit//identifier"
 
 ```
