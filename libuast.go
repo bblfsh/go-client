@@ -9,8 +9,8 @@ import (
 	"gopkg.in/bblfsh/sdk.v0/uast"
 )
 
-// #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
-// #cgo LDFLAGS: -luast -lxml2
+// #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2 -std=c99
+// #cgo LDFLAGS: -lxml2
 // #include "bindings.h"
 import "C"
 
