@@ -1,25 +1,29 @@
+# Package configuration
+PROJECT = client-go
 LIBUAST_VERSION=0.2.0
 
-GO_CMD = go
-GO_BUILD = $(GO_CMD) get -t -v
-GO_CLEAN = $(GO_CMD) clean
-GO_TEST = $(GO_CMD) test -v
+# Including ci Makefile
+MAKEFILE = Makefile.main
+CI_REPOSITORY = https://github.com/src-d/ci.git
+CI_FOLDER = .ci
 
-.PHONY: all clean deps build test
+$(MAKEFILE):
+	@git clone --quiet $(CI_REPOSITORY) $(CI_FOLDER); \
+	cp $(CI_FOLDER)/$(MAKEFILE) .;
 
-all: deps build
+-include $(MAKEFILE)
 
-clean:
+clean: clean-libuast
+clean-libuast:
 	find ./ -name '*.[h,c]' ! -name 'bindings.h' -exec rm -f {} +
-	$(GO_CLEAN)
 
-deps:
+dependencies: cgo-dependencies
+cgo-dependencies:
 	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
 	mv libuast-v$(LIBUAST_VERSION)/src/* .
 	rm -rf libuast-v$(LIBUAST_VERSION)
+	$(GOGET) .
 
-build:
-	$(GO_BUILD) ./...
-
-test:
-	$(GO_TEST) ./...
+# $(DEPENDENCIES) it's allowed to file since the code it's not compilable
+# without libuast.
+.IGNORE: $(DEPENDENCIES)

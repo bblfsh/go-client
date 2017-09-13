@@ -1,0 +1,9 @@
+# libuast source code
+*.c
+*.h
+!bindings.h
+
+# ci files
+Makefile.main
+.ci
+bin
