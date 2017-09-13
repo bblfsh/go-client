@@ -1,8 +1,11 @@
 package bblfsh
 
-import "testing"
-import "gopkg.in/bblfsh/sdk.v0/protocol"
-import "github.com/stretchr/testify/require"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"gopkg.in/bblfsh/sdk.v0/protocol"
+)
 
 func TestParseRequestConfiguration(t *testing.T) {
 	req := ParseRequest{}

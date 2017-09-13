@@ -1,16 +1,21 @@
 language: go
-sudo: false
+
 go:
-  - 1.7.x
-  - 1.8.x
-  - 1.9.x
-  - master
+  - 1.9
+
+go_import_path: gopkg.in/bblfsh/client-go.v0
+
+sudo: required
+
+services:
+  - docker
 
 before_install:
-  - make deps
-
-install:
-  - make build
+  - docker run --privileged -d -p 9432:9432 --name bblfsh bblfsh/server
+  - make dependencies
 
 script:
-  - make test
+  - make test-coverage
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
