@@ -36,7 +36,7 @@ if err != nil {
 
 python := "import foo"
 
-res, err := client.NewParseRequest().Content(python).Do()
+res, err := client.NewParseRequest().Language("python").Content(python).Do()
 if err != nil {
     panic(err)
 }
