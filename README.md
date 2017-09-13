@@ -12,7 +12,7 @@ The recommended way to install *client-go* is:
 ```
 go get -u gopkg.in/bblfsh/client-go.v0/...
 cd $GOPATH/src/gopkg.in/bblfsh/client-go.v0
-make
+make dependencies
 ```
 
 ## Example
