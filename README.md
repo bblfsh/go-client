@@ -1,22 +1,79 @@
-# Babelfish Go Client [![Build Status](https://travis-ci.org/bblfsh/client-go.svg?branch=master)](https://travis-ci.org/bblfsh/client-go) [![codecov](https://codecov.io/gh/bblfsh/client-go/branch/master/graph/badge.svg)](https://codecov.io/gh/bblfsh/client-go)
+# client-go [![GoDoc](https://godoc.org/gopkg.in/bblfsh/client-go.v0?status.svg)](https://godoc.org/gopkg.in/bblfsh/client-go.v0) [![Build Status](https://travis-ci.org/bblfsh/client-go.svg?branch=master)](https://travis-ci.org/bblfsh/client-go) [![codecov](https://codecov.io/gh/bblfsh/client-go/branch/master/graph/badge.svg)](https://codecov.io/gh/bblfsh/client-go)
 
-Babelfish Go client library provides functionality to both
+[Babelfish](https://doc.bblf.sh) Go client library provides functionality to both
 connect to the Babelfish server to parse code
 (obtaining an [UAST](https://doc.bblf.sh/uast/specification.html) as a result)
 and to analyse UASTs with the functionality provided by [libuast](https://github.com/bblfsh/libuast).
 
 ## Installation
 
-```
-$ make
-```
-
-## Usage
-
-Users of this library will want use it as basis for their own code analysis,
-but a standalone app is also provided to easily give a try to its features:
+The recommended way to install *client-go* is:
 
 ```
-$ cli -e localhost:9432 -f sample.py -q "/compilation_unit//identifier"
+go get -u gopkg.in/bblfsh/client-go.v0/...
+cd $GOPATH/src/gopkg.in/bblfsh/client-go.v0
+make
+```
+
+## Example
+
+This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.
+
+If you don't have a bblfsh server running you can execute it using the following command:
+
+```sh
+docker run --privileged --rm -it -p 9432:9432 --name bblfsh bblfsh/server
+```
+
+Please read the [getting started](https://doc.bblf.sh/user/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server.
+
+
+```go
+client, err := bblfsh.NewBblfshClient("0.0.0.0:9432")
+if err != nil {
+    panic(err)
+}
+
+python := "import foo"
+
+res, err := client.NewParseRequest().Content(python).Do()
+if err != nil {
+    panic(err)
+}
+
+fmt.Println(res.UAST)
+```
 
 ```
+Module {
+.  Roles: File
+.  Children: {
+.  .  0: Import {
+.  .  .  Roles: ImportDeclaration,Statement
+.  .  .  StartPosition: {
+.  .  .  .  Offset: 0
+.  .  .  .  Line: 1
+.  .  .  .  Col: 1
+.  .  .  }
+.  .  .  Properties: {
+.  .  .  .  internalRole: body
+.  .  .  }
+.  .  .  Children: {
+.  .  .  .  0: alias {
+.  .  .  .  .  Roles: ImportPath,SimpleIdentifier
+.  .  .  .  .  TOKEN "foo"
+.  .  .  .  .  Properties: {
+.  .  .  .  .  .  asname: <nil>
+.  .  .  .  .  .  internalRole: names
+.  .  .  .  .  }
+.  .  .  .  }
+.  .  .  }
+.  .  }
+.  }
+}
+```
+
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE)
