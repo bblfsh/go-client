@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"gopkg.in/bblfsh/client-go.v0"
+	"gopkg.in/bblfsh/client-go.v1"
 )
 
 var endpoint = flag.String("e", "localhost:9432", "endpoint of the babelfish server")
