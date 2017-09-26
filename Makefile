@@ -7,6 +7,8 @@ MAKEFILE = Makefile.main
 CI_REPOSITORY = https://github.com/src-d/ci.git
 CI_FOLDER = .ci
 
+TOOLS_FOLDER = tools
+
 $(MAKEFILE):
 	@git clone --quiet $(CI_REPOSITORY) $(CI_FOLDER); \
 	cp $(CI_FOLDER)/$(MAKEFILE) .;
@@ -20,7 +22,7 @@ clean-libuast:
 dependencies: cgo-dependencies
 cgo-dependencies:
 	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
-	mv libuast-v$(LIBUAST_VERSION)/src/* .
+	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
 	rm -rf libuast-v$(LIBUAST_VERSION)
 	$(GOGET) .
 

@@ -1,4 +1,4 @@
-package bblfsh
+package tools
 
 // #include <stdlib.h>
 import "C"
