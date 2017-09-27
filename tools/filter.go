@@ -1,4 +1,4 @@
-package bblfsh
+package tools
 
 import (
 	"errors"
@@ -33,6 +33,10 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 // returning the list of nodes that satisfy the given query.
 // Filter is thread-safe but not current by an internal global lock.
 func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
+	if len(xpath) == 0 {
+		return nil, nil
+	}
+
 	// Find is not thread-safe bacause of the underlining C API
 	findMutex.Lock()
 	defer findMutex.Unlock()
