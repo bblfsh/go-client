@@ -1,6 +1,7 @@
 #ifndef CLIENT_GO_BINDINGS_H_
 #define CLIENT_GO_BINDINGS_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -52,7 +53,7 @@ static void CreateUast() {
   });
 }
 
-static int Filter(uintptr_t node_ptr, const char *query) {
+static bool Filter(uintptr_t node_ptr, const char *query) {
   nodes = UastFilter(ctx, (void*)node_ptr, query);
   return nodes != NULL;
 }
