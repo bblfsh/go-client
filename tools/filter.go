@@ -52,7 +52,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	defer debug.SetGCPercent(gcpercent)
 
 	ptr := nodeToPtr(node)
-	if C.Filter(ptr, cquery) != 0 {
+	if !C.Filter(ptr, cquery) {
 		return nil, errors.New("error: UastFilter() failed")
 	}
 
