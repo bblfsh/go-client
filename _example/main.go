@@ -23,21 +23,17 @@ func main() {
 		panic(err)
 	}
 
-	res, err := client.NewParseRequest().ReadFile(*filename).Do()
+	res, err := client.NewParseRequest().Language("python").ReadFile(*filename).Do()
 	if err != nil {
 		panic(err)
 	}
 
+	fmt.Println(res.Errors)
 	if *query == "" {
 		fmt.Println(res.UAST)
 		return
 
 	}
 
-	results, _ := bblfsh.Filter(res.UAST, *query)
-	for i, node := range results {
-		fmt.Println("-", i+1, "----------------------")
-		fmt.Println(node)
-	}
 
 }

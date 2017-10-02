@@ -3,26 +3,45 @@ package bblfsh
 import (
 	"time"
 
-	"gopkg.in/bblfsh/sdk.v1/protocol"
 	"google.golang.org/grpc"
+	"gopkg.in/bblfsh/sdk.v1/protocol"
 )
 
-// BblfshClient holds the public client API to interact with the babelfish server.
-type BblfshClient struct {
-	client protocol.ProtocolServiceClient
+// Client holds the public client API to interact with the bblfsh daemon.
+type Client struct {
+	*grpc.ClientConn
+	service protocol.ProtocolServiceClient
 }
 
-// NewBblfshClient returns a new babelfish client given a server endpoint
-func NewBblfshClient(endpoint string) (*BblfshClient, error) {
-	conn, err := grpc.Dial(endpoint, grpc.WithTimeout(time.Second*2), grpc.WithInsecure())
+// NewClient returns a new bblfsh client given a bblfshd endpoint.
+func NewClient(endpoint string) (*Client, error) {
+	opts := []grpc.DialOption{
+		grpc.WithTimeout(5 * time.Second),
+		grpc.WithBlock(),
+		grpc.WithInsecure(),
+	}
+
+	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return nil, err
 	}
-	return &BblfshClient{
-		client: protocol.NewProtocolServiceClient(conn),
+	return &Client{
+		ClientConn: conn,
+		service:    protocol.NewProtocolServiceClient(conn),
 	}, nil
 }
 
-func (c *BblfshClient) NewParseRequest() *ParseRequest {
+// NewParseRequest is a parsing request to get the UAST.
+func (c *Client) NewParseRequest() *ParseRequest {
 	return &ParseRequest{client: c}
+}
+
+// NewNativeParseRequest is a parsing request to get the AST.
+func (c *Client) NewNativeParseRequest() *NativeParseRequest {
+	return &NativeParseRequest{client: c}
+}
+
+// NewVersionRequest is a parsing request to get the version of the server.
+func (c *Client) NewVersionRequest() *VersionRequest {
+	return &VersionRequest{client: c}
 }
