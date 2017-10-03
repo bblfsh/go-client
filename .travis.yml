@@ -3,7 +3,7 @@ language: go
 go:
   - 1.9
 
-go_import_path: gopkg.in/bblfsh/client-go.v1
+go_import_path: gopkg.in/bblfsh/client-go.v2
 
 sudo: required
 
