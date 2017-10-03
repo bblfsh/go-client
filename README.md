@@ -29,7 +29,7 @@ Please read the [getting started](https://doc.bblf.sh/user/getting-started.html)
 
 
 ```go
-client, err := bblfsh.NewBblfshClient("0.0.0.0:9432")
+client, err := bblfsh.NewClient("0.0.0.0:9432")
 if err != nil {
     panic(err)
 }
