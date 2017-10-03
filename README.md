@@ -1,4 +1,4 @@
-# client-go [![GoDoc](https://godoc.org/gopkg.in/bblfsh/client-go.v1?status.svg)](https://godoc.org/gopkg.in/bblfsh/client-go.v1) [![Build Status](https://travis-ci.org/bblfsh/client-go.svg?branch=master)](https://travis-ci.org/bblfsh/client-go) [![codecov](https://codecov.io/gh/bblfsh/client-go/branch/master/graph/badge.svg)](https://codecov.io/gh/bblfsh/client-go)
+# client-go [![GoDoc](https://godoc.org/gopkg.in/bblfsh/client-go.v2?status.svg)](https://godoc.org/gopkg.in/bblfsh/client-go.v2) [![Build Status](https://travis-ci.org/bblfsh/client-go.svg?branch=master)](https://travis-ci.org/bblfsh/client-go) [![codecov](https://codecov.io/gh/bblfsh/client-go/branch/master/graph/badge.svg)](https://codecov.io/gh/bblfsh/client-go)
 
 [Babelfish](https://doc.bblf.sh) Go client library provides functionality to both
 connect to the Babelfish server to parse code
@@ -10,8 +10,8 @@ and to analyse UASTs with the functionality provided by [libuast](https://github
 The recommended way to install *client-go* is:
 
 ```
-go get -u gopkg.in/bblfsh/client-go.v1/...
-cd $GOPATH/src/gopkg.in/bblfsh/client-go.v1
+go get -u gopkg.in/bblfsh/client-go.v2/...
+cd $GOPATH/src/gopkg.in/bblfsh/client-go.v2
 make dependencies
 ```
 
