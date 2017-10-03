@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	client, err := bblfsh.NewBblfshClient(*endpoint)
+	client, err := bblfsh.NewClient(*endpoint)
 	if err != nil {
 		panic(err)
 	}
