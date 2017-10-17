@@ -3,6 +3,7 @@ package tools
 import (
 	"errors"
 	"runtime/debug"
+	"sort"
 	"sync"
 	"unsafe"
 
@@ -94,4 +95,114 @@ func goGetRolesSize(ptr C.uintptr_t) C.int {
 func goGetRole(ptr C.uintptr_t, index C.int) C.uint16_t {
 	role := ptrToNode(ptr).Roles[int(index)]
 	return C.uint16_t(role)
+}
+
+//export goGetPropertiesSize
+func goGetPropertiesSize(ptr C.uintptr_t) C.int {
+	return C.int(len(ptrToNode(ptr).Properties))
+}
+
+//export goGetPropertyKey
+func goGetPropertyKey(ptr C.uintptr_t, index C.int) *C.char {
+	var keys []string
+	for k := range ptrToNode(ptr).Properties {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return pool.getCstring(keys[int(index)])
+}
+
+//export goGetPropertyValue
+func goGetPropertyValue(ptr C.uintptr_t, index C.int) *C.char {
+	p := ptrToNode(ptr).Properties
+	var keys []string
+	for k := range p {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return pool.getCstring(p[keys[int(index)]])
+}
+
+//export goHasStartOffset
+func goHasStartOffset(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).StartPosition != nil
+}
+
+//export goGetStartOffset
+func goGetStartOffset(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).StartPosition
+	if p != nil {
+		return C.uint32_t(p.Offset)
+	}
+	return 0
+}
+
+//export goHasStartLine
+func goHasStartLine(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).StartPosition != nil
+}
+
+//export goGetStartLine
+func goGetStartLine(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).StartPosition
+	if p != nil {
+		return C.uint32_t(p.Line)
+	}
+	return 0
+}
+
+//export goHasStartCol
+func goHasStartCol(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).StartPosition != nil
+}
+
+//export goGetStartCol
+func goGetStartCol(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).StartPosition
+	if p != nil {
+		return C.uint32_t(p.Col)
+	}
+	return 0
+}
+
+//export goHasEndOffset
+func goHasEndOffset(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).EndPosition != nil
+}
+
+//export goGetEndOffset
+func goGetEndOffset(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).EndPosition
+	if p != nil {
+		return C.uint32_t(p.Offset)
+	}
+	return 0
+}
+
+//export goHasEndLine
+func goHasEndLine(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).EndPosition != nil
+}
+
+//export goGetEndLine
+func goGetEndLine(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).EndPosition
+	if p != nil {
+		return C.uint32_t(p.Line)
+	}
+	return 0
+}
+
+//export goHasEndCol
+func goHasEndCol(ptr C.uintptr_t) C.bool {
+	return ptrToNode(ptr).EndPosition != nil
+}
+
+//export goGetEndCol
+func goGetEndCol(ptr C.uintptr_t) C.uint32_t {
+	p := ptrToNode(ptr).EndPosition
+	if p != nil {
+		return C.uint32_t(p.Col)
+	}
+	return 0
 }
