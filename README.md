@@ -27,7 +27,6 @@ docker run --privileged --rm -it -p 9432:9432 --name bblfsh bblfsh/server
 
 Please read the [getting started](https://doc.bblf.sh/user/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server.
 
-
 ```go
 client, err := bblfsh.NewClient("0.0.0.0:9432")
 if err != nil {
@@ -41,38 +40,47 @@ if err != nil {
     panic(err)
 }
 
-fmt.Println(res.UAST)
+query := "//*[@roleImport]"
+nodes, _ := tools.Filter(res.UAST, query)
+for _, n := range nodes {
+    fmt.Println(n)
+}
 ```
 
 ```
-Module {
-.  Roles: File
+Import {
+.  Roles: Import,Declaration,Statement
+.  StartPosition: {
+.  .  Offset: 0
+.  .  Line: 1
+.  .  Col: 1
+.  }
+.  Properties: {
+.  .  internalRole: body
+.  }
 .  Children: {
-.  .  0: Import {
-.  .  .  Roles: Statement,Declaration,Import
-.  .  .  StartPosition: {
-.  .  .  .  Offset: 0
-.  .  .  .  Line: 1
-.  .  .  .  Col: 1
-.  .  .  }
+.  .  0: alias {
+.  .  .  Roles: Import,Pathname,Identifier
+.  .  .  TOKEN "foo"
 .  .  .  Properties: {
-.  .  .  .  internalRole: body
-.  .  .  }
-.  .  .  Children: {
-.  .  .  .  0: alias {
-.  .  .  .  .  Roles: Import,Pathname,Identifier
-.  .  .  .  .  TOKEN "foo"
-.  .  .  .  .  Properties: {
-.  .  .  .  .  .  asname: <nil>
-.  .  .  .  .  .  internalRole: names
-.  .  .  .  .  }
-.  .  .  .  }
+.  .  .  .  asname: <nil>
+.  .  .  .  internalRole: names
 .  .  .  }
 .  .  }
 .  }
 }
+
+alias {
+.  Roles: Import,Pathname,Identifier
+.  TOKEN "foo"
+.  Properties: {
+.  .  asname: <nil>
+.  .  internalRole: names
+.  }
+}
 ```
 
+Please read the [Babelfish clients](https://doc.bblf.sh/user/language-clients.html) guide section to learn more about babelfish clients and their query language.
 
 ## License
 
