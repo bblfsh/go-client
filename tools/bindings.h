@@ -147,6 +147,10 @@ static bool Filter(uintptr_t node_ptr, const char *query) {
   return nodes != NULL;
 }
 
+static char *Error() {
+  return LastError();
+}
+
 static int Size() {
   return NodesSize(nodes);
 }

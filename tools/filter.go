@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"errors"
+	"fmt"
 	"runtime/debug"
 	"sort"
 	"sync"
@@ -10,7 +10,7 @@ import (
 	"gopkg.in/bblfsh/sdk.v1/uast"
 )
 
-// #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2 -std=c99
+// #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
 // #cgo LDFLAGS: -lxml2
 // #include "bindings.h"
 import "C"
@@ -54,7 +54,9 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 
 	ptr := nodeToPtr(node)
 	if !C.Filter(ptr, cquery) {
-		return nil, errors.New("error: UastFilter() failed")
+		error := C.Error()
+		return nil, fmt.Errorf("UastFilter() failed: %s", C.GoString(error))
+		C.free(unsafe.Pointer(error))
 	}
 
 	nu := int(C.Size())
