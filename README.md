@@ -78,6 +78,16 @@ alias {
 .  .  internalRole: names
 .  }
 }
+
+iter, err := tools.NewIterator(res.UAST)
+if err != nil {
+    panic(err)
+}
+defer iter.Dispose()
+
+for node := range iter.Iterate() {
+    fmt.Println(node)
+}
 ```
 
 Please read the [Babelfish clients](https://doc.bblf.sh/user/language-clients.html) guide section to learn more about babelfish clients and their query language.

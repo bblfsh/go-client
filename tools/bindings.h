@@ -37,7 +37,7 @@ static const char *Token(const void *node) {
   return goGetToken((uintptr_t)node);
 }
 
-static int ChildrenSize(const void *node) {
+static size_t ChildrenSize(const void *node) {
   return goGetChildrenSize((uintptr_t)node);
 }
 
@@ -45,7 +45,7 @@ static void *ChildAt(const void *data, int index) {
   return (void*)goGetChild((uintptr_t)data, index);
 }
 
-static int RolesSize(const void *node) {
+static size_t RolesSize(const void *node) {
   return goGetRolesSize((uintptr_t)node);
 }
 
@@ -53,7 +53,7 @@ static uint16_t RoleAt(const void *node, int index) {
   return goGetRole((uintptr_t)node, index);
 }
 
-static int PropertiesSize(const void *node) {
+static size_t PropertiesSize(const void *node) {
   return goGetPropertiesSize((uintptr_t)node);
 }
 
@@ -145,6 +145,18 @@ static void CreateUast() {
 static bool Filter(uintptr_t node_ptr, const char *query) {
   nodes = UastFilter(ctx, (void*)node_ptr, query);
   return nodes != NULL;
+}
+
+static uintptr_t IteratorNew(uintptr_t node_ptr, int order) {
+  return (uintptr_t)UastIteratorNew(ctx, (void *)node_ptr, order);
+}
+
+static uintptr_t IteratorNext(uintptr_t iter) {
+  return (uintptr_t)UastIteratorNext((void*)iter);
+}
+
+static uintptr_t IteratorFree(uintptr_t iter) {
+  UastIteratorFree((void*)iter);
 }
 
 static char *Error() {
