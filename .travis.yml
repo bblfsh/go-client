@@ -11,7 +11,7 @@ services:
   - docker
 
 before_install:
-  - docker run --privileged -d -p 9432:9432 --name bblfsh bblfsh/server
+  - docker run --privileged -d -p 9432:9432 --name bblfsh bblfsh/bblfshd
   - make dependencies
 
 script:
