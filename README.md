@@ -9,11 +9,22 @@ and to analyse UASTs with the functionality provided by [libuast](https://github
 
 The recommended way to install *client-go* is:
 
-```
+```sh
 go get -u gopkg.in/bblfsh/client-go.v2/...
 cd $GOPATH/src/gopkg.in/bblfsh/client-go.v2
 make dependencies
 ```
+
+The first command will fail when trying to compile the project because we stil
+doesn't have some dependencies with:
+
+```sh
+In file included from tools/filter.go:14:0:
+./bindings.h:8:10: fatal error: uast.h: No such file or directory
+ #include "uast.h"
+```
+
+But the `make dependencies` command will compile and install everything.
 
 ## Example
 
