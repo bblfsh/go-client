@@ -9,8 +9,8 @@ and to analyse UASTs with the functionality provided by [libuast](https://github
 
 The recommended way to install *client-go* is:
 
-```
-go get -u gopkg.in/bblfsh/client-go.v2/...
+```sh
+go get -d -u gopkg.in/bblfsh/client-go.v2/...
 cd $GOPATH/src/gopkg.in/bblfsh/client-go.v2
 make dependencies
 ```
@@ -22,7 +22,7 @@ This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/ua
 If you don't have a bblfsh server running you can execute it using the following command:
 
 ```sh
-docker run --privileged --rm -it -p 9432:9432 --name bblfsh bblfsh/server
+docker run --privileged --rm -d -p 9432:9432 --name bblfsh bblfsh/bblfshd
 ```
 
 Please read the [getting started](https://doc.bblf.sh/user/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server.
