@@ -1,6 +1,6 @@
 # Package configuration
 PROJECT = client-go
-LIBUAST_VERSION=1.4.1
+LIBUAST_VERSION=1.6.1
 
 # Including ci Makefile
 MAKEFILE = Makefile.main

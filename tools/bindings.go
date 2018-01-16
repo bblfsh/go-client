@@ -10,13 +10,31 @@ import (
 	"gopkg.in/bblfsh/sdk.v1/uast"
 )
 
-// #cgo CFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
+// #cgo CXXFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
 // #cgo LDFLAGS: -lxml2
 // #include "bindings.h"
 import "C"
 
 var findMutex sync.Mutex
+var itMutex sync.Mutex
 var pool cstringPool
+
+// Traversal strategy for UAST trees
+type TreeOrder int
+const (
+	// PreOrder traversal
+	PreOrder TreeOrder = iota
+	// PostOrder traversal
+	PostOrder
+	// LevelOrder (aka breadth-first) traversal
+	LevelOrder
+)
+
+// Iterator allows for traversal over a UAST tree.
+type Iterator struct {
+	iterPtr C.uintptr_t
+	finished bool
+}
 
 func init() {
 	C.CreateUast()
@@ -32,7 +50,7 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 
 // Filter takes a `*uast.Node` and a xpath query and filters the tree,
 // returning the list of nodes that satisfy the given query.
-// Filter is thread-safe but not current by an internal global lock.
+// Filter is thread-safe but not concurrent by an internal global lock.
 func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	if len(xpath) == 0 {
 		return nil, nil
@@ -208,3 +226,92 @@ func goGetEndCol(ptr C.uintptr_t) C.uint32_t {
 	}
 	return 0
 }
+
+// NewIterator constructs a new Iterator starting from the given `Node` and
+// iterating with the traversal strategy given by the `order` parameter. Once
+// the iteration have finished or you don't need the iterator anymore you must
+// dispose it with the Dispose() method (or call it with `defer`).
+func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
+	itMutex.Lock()
+	defer itMutex.Unlock()
+
+	// stop GC
+	gcpercent := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(gcpercent)
+
+	ptr := nodeToPtr(node)
+	it := C.IteratorNew(ptr, C.int(order))
+	if it == 0 {
+		error := C.Error()
+		return nil, fmt.Errorf("UastIteratorNew() failed: %s", C.GoString(error))
+		C.free(unsafe.Pointer(error))
+	}
+
+	return &Iterator {
+		iterPtr: it,
+		finished: false,
+	}, nil
+}
+
+// Next retrieves the next `Node` in the tree's traversal or `nil` if there are no more
+// nodes. Calling `Next()` on a finished iterator after the first `nil` will
+// return an error.This is thread-safe but not concurrent by an internal global lock.
+func (i *Iterator) Next() (*uast.Node, error) {
+	itMutex.Lock()
+	defer itMutex.Unlock()
+
+	if i.finished {
+		return nil, fmt.Errorf("Next() called on finished iterator")
+	}
+
+	// stop GC
+	gcpercent := debug.SetGCPercent(-1)
+	defer debug.SetGCPercent(gcpercent)
+
+	pnode := C.IteratorNext(i.iterPtr);
+	if pnode == 0 {
+		// End of the iteration
+		i.finished = true
+		return nil, nil
+	}
+	return ptrToNode(pnode), nil
+}
+
+// Iterate function is similar to Next() but returns the `Node`s in a channel. It's mean
+// to be used with the `for node := range myIter.Iterate() {}` loop.
+func (i *Iterator) Iterate() <- chan *uast.Node {
+	c := make(chan *uast.Node)
+	if i.finished {
+		close(c)
+		return c
+	}
+
+	go func() {
+		for {
+			n, err := i.Next()
+			if n == nil || err != nil {
+				close(c)
+				break
+			}
+
+			c <- n
+		}
+	}()
+
+	return c
+}
+
+// Dispose must be called once you've finished using the iterator or preventively
+// with `defer` to free the iterator resources. Failing to do so would produce
+// a memory leak.
+func (i *Iterator) Dispose() {
+	itMutex.Lock()
+	defer itMutex.Unlock()
+
+	if i.iterPtr != 0 {
+		C.IteratorFree(i.iterPtr)
+		i.iterPtr = 0
+	}
+	i.finished = true
+}
+
