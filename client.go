@@ -31,6 +31,14 @@ func NewClient(endpoint string) (*Client, error) {
 	}, nil
 }
 
+// NewClientWithConnection returns a new bblfsh client given a grpc connection.
+func NewClientWithConnection(conn *grpc.ClientConn) (*Client, error) {
+	return &Client{
+		ClientConn: conn,
+		service:    protocol.NewProtocolServiceClient(conn),
+	}, nil
+}
+
 // NewParseRequest is a parsing request to get the UAST.
 func (c *Client) NewParseRequest() *ParseRequest {
 	return &ParseRequest{client: c}
