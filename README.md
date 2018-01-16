@@ -15,6 +15,8 @@ cd $GOPATH/src/gopkg.in/bblfsh/client-go.v2
 make dependencies
 ```
 
+Windows build is supported, though requires custom actions. Read [WINDOWS.md](WINDOWS.md).
+
 ## Example
 
 This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.

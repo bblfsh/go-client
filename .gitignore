@@ -1,3 +1,5 @@
+.idea
+
 # libuast source code
 *.c
 *.h
