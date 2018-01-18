@@ -18,9 +18,9 @@ uses MinGW internally.
 ## MinGW static
 
 ```
-SET CGO_CFLAGS=-I%PREFIX%\include\libuast -DLIBUAST_STATIC
-SET CGO_LDFLAGS=-L%PREFIX%\lib -luast -static -lstdc++ -static-libgcc
-go get -v gopkg.in/bblfsh/client-go.v2/...
+SET CGO_CFLAGS=-I%PREFIX%\include -DLIBUAST_STATIC
+SET CGO_LDFLAGS=-L%PREFIX%\lib -luast -lxml2 -static -lstdc++ -static-libgcc
+go get -v -tags custom_libuast gopkg.in/bblfsh/client-go.v2/...
 ```
 
 `-static-libstdc++` instead of `-static -lstdc++` may be used if works.
@@ -36,8 +36,8 @@ pexports %PREFIX%/bin/uast.dll > %PREFIX%/bin/uast.def
 dlltool -k --no-leading-underscore -d %PREFIX%/bin/libxml2.def -l %PREFIX%/lib/libuast.a
 
 SET CGO_CFLAGS=-I%PREFIX%\include
-SET CGO_LDFLAGS=-L%PREFIX%\lib
-go get -v gopkg.in/bblfsh/client-go.v2/...
+SET CGO_LDFLAGS=-L%PREFIX%\lib -luast -lxml2
+go get -v -tags custom_libuast gopkg.in/bblfsh/client-go.v2/...
 ```
 
 You have to carry `%PREFIX%\bin\libxml2.dll` and `%PREFIX%\bin\uast.dll`

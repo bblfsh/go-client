@@ -15,7 +15,8 @@ cd $GOPATH/src/gopkg.in/bblfsh/client-go.v2
 make dependencies
 ```
 
-Windows build is supported, though requires custom actions. Read [WINDOWS.md](WINDOWS.md).
+Windows build is supported, provided by you have `make` and `curl` in your `%PATH%`.
+It is also possible to link against custom `libuast` on Windows, read [WINDOWS.md](WINDOWS.md).
 
 ## Example
 
