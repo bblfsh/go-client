@@ -16,4 +16,6 @@ install:
   - c:\msys64\usr\bin\pacman --noconfirm --needed -S mingw-w64-x86_64-toolchain
 
 build_script:
+  - set PATH=%PATH:C:\Program Files\Git\usr\bin;=%
+  - set PATH=C:\msys64\mingw64\bin;%PATH%
   - make dependencies
