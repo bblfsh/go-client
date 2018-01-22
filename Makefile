@@ -32,7 +32,7 @@ cgo-dependencies:
 	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
 	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
 	rm -rf libuast-v$(LIBUAST_VERSION)
-	$(GOGET) .
+	$(GOGET) ./...
 else
 binaries.win64.mingw\lib:
 	go get -v github.com/mholt/archiver/cmd/archiver
@@ -42,7 +42,7 @@ binaries.win64.mingw\lib:
 	del /q binaries.win64.mingw.zip && echo done
 
 cgo-dependencies: binaries.win64.mingw\lib
-	go get ./...
+	$(GOGET) ./...
 endif  # !Windows_NT
 
 # $(DEPENDENCIES) it's allowed to file since the code is not compilable
