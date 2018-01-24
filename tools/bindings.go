@@ -10,8 +10,38 @@ import (
 	"gopkg.in/bblfsh/sdk.v1/uast"
 )
 
-// #cgo CXXFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
-// #cgo LDFLAGS: -lxml2
+// libuast can be linked in two modes on UNIX platforms: hosted and embedded.
+// Hosted mode - libuast is installed globally in the system.
+// Embedded mode - libuast source is inside "tools" directory and we compile it with cgo.
+// This is what happens during `make dependencies`. It is the default.
+//
+// Build tags:
+// custom_libuast - disables all the default CXXFLAGS and LDFLAGS.
+// host_libuast - forces hosted mode.
+//
+// !unix defaults:
+// CFLAGS: -Iinclude -DLIBUAST_STATIC
+// CXXFLAGS: -Iinclude -DLIBUAST_STATIC
+// LDFLAGS: -luast -lxml2 -Llib -static -lstdc++ -static-libgcc
+// Notes: static linkage, libuast installation prefix is expected
+// to be extracted into . ("tools΅ directory). Windows requires *both*
+// CFLAGS and CXXFLAGS be set.
+//
+// unix defaults:
+// CXXFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
+// LDFLAGS: -lxml2
+// Notes: expects the embedded mode. "host_libuast" tag prepends -luast to LDFLAGS.
+//
+// Final notes:
+// Cannot actually use "unix" tag until this is resolved: https://github.com/golang/go/issues/20322
+// So inverted the condition: unix == !windows here.
+
+// #cgo !custom_libuast,windows CFLAGS: -Iinclude -DLIBUAST_STATIC
+// #cgo !custom_libuast,windows CXXFLAGS: -Iinclude -DLIBUAST_STATIC
+// #cgo !custom_libuast,!windows CXXFLAGS: -I/usr/local/include -I/usr/local/include/libxml2 -I/usr/include -I/usr/include/libxml2
+// #cgo !custom_libuast,host_libuast !custom_libuast,windows LDFLAGS: -luast
+// #cgo !custom_libuast LDFLAGS: -lxml2
+// #cgo !custom_libuast,windows LDFLAGS: -Llib -static -lstdc++ -static-libgcc
 // #include "bindings.h"
 import "C"
 

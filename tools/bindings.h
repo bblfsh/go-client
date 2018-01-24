@@ -5,7 +5,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#if __has_include("uast.h") // std C++17, GCC 5.x || Clang || VSC++ 2015u2+
+// Embedded mode on UNIX, MSVC build on Windows.
 #include "uast.h"
+#else
+// Hosted mode on UNIX, MinGW build on Windows.
+#include "libuast/uast.h"
+#endif
 
 extern char* goGetInternalType(uintptr_t);
 extern char* goGetToken(uintptr_t);
