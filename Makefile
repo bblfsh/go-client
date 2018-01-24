@@ -1,6 +1,6 @@
 # Package configuration
 PROJECT = client-go
-LIBUAST_VERSION=1.6.1
+LIBUAST_VERSION=.1.8.1
 GOPATH ?= $(shell go env GOPATH)
 
 ifneq ($(OS),Windows_NT)
@@ -21,6 +21,7 @@ $(MAKEFILE):
 	$(COPY) $(CI_FOLDER)/$(MAKEFILE) .);
 
 -include $(MAKEFILE)
+GOGET ?= go get
 
 clean: clean-libuast
 clean-libuast:
@@ -37,7 +38,7 @@ else
 binaries.win64.mingw\lib:
 	go get -v github.com/mholt/archiver/cmd/archiver
 	cd $(TOOLS_FOLDER) && \
-	curl -SLo binaries.win64.mingw.zip https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/binaries.win64.mingw.zip && \
+	curl -SLko binaries.win64.mingw.zip https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/binaries.win64.mingw.zip && \
 	$(GOPATH)\bin\archiver open binaries.win64.mingw.zip && \
 	del /q binaries.win64.mingw.zip && echo done
 
