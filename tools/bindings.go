@@ -42,6 +42,7 @@ import (
 // #cgo !custom_libuast,host_libuast !custom_libuast,windows LDFLAGS: -luast
 // #cgo !custom_libuast LDFLAGS: -lxml2
 // #cgo !custom_libuast,windows LDFLAGS: -Llib -static -lstdc++ -static-libgcc
+// #cgo !custom_libuast CXXFLAGS: -std=c++14
 // #include "bindings.h"
 import "C"
 
