@@ -79,6 +79,15 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 	return (*uast.Node)(unsafe.Pointer(uintptr(ptr)))
 }
 
+func initFilter(node *uast.Node, xpath string) (*C.char, int, C.uintptr_t) {
+	findMutex.Lock()
+	cquery := pool.getCstring(xpath)
+	gcpercent := debug.SetGCPercent(-1)
+	ptr := nodeToPtr(node)
+
+	return cquery, gcpercent, ptr
+}
+
 // Filter takes a `*uast.Node` and a xpath query and filters the tree,
 // returning the list of nodes that satisfy the given query.
 // Filter is thread-safe but not concurrent by an internal global lock.
@@ -87,21 +96,11 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, nil
 	}
 
-	// Find is not thread-safe bacause of the underlining C API
-	findMutex.Lock()
+	cquery, gcpercent, ptr := initFilter(node, xpath)
 	defer findMutex.Unlock()
-
-	// convert go string to C string
-	cquery := pool.getCstring(xpath)
-
-	// Make sure we release the pool of strings
 	defer pool.release()
-
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
 	defer debug.SetGCPercent(gcpercent)
 
-	ptr := nodeToPtr(node)
 	if !C.Filter(ptr, cquery) {
 		error := C.Error()
 		return nil, fmt.Errorf("UastFilter() failed: %s", C.GoString(error))
@@ -114,6 +113,36 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		results[i] = ptrToNode(C.At(C.int(i)))
 	}
 	return results, nil
+}
+
+// XXX docs
+func FilterBool(node *uast.Node, xpath string)(bool, error) {
+	if len(xpath) == 0 {
+		return false, nil
+	}
+
+	cquery, gcpercent, ptr := initFilter(node, xpath)
+	defer findMutex.Unlock()
+	defer pool.release()
+	defer debug.SetGCPercent(gcpercent)
+
+	res := C.FilterBool(ptr, cquery)
+	if (res < 0) {
+		error := C.Error()
+		return false, fmt.Errorf("UastFilterBool() failed: %s", C.GoString(error))
+		C.free(unsafe.Pointer(error))
+	}
+
+	var gores bool
+	if res == 0 {
+		gores = false
+	} else if res == 1{
+		gores = true
+	} else {
+		panic("Implementation error on FilterBool")
+	}
+
+	return gores, nil
 }
 
 //export goGetInternalType
