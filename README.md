@@ -87,6 +87,13 @@ defer iter.Dispose()
 for node := range iter.Iterate() {
     fmt.Println(node)
 }
+
+// For XPath expressions returning a boolean/numeric/string value, you must
+// use the right typed Filter function:
+
+boolres, err := FilterBool(res.UAST, "boolean(//*[@strtOffset or @endOffset])")
+strres, err := FilterString(res.UAST, "name(//*[1])")
+numres, err := FilterNumber(res.UAST, "count(//*)")
 ```
 
 Please read the [Babelfish clients](https://doc.bblf.sh/user/language-clients.html) guide section to learn more about babelfish clients and their query language.

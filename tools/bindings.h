@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h> // XXX
 
 #if __has_include("uast.h") // std C++17, GCC 5.x || Clang || VSC++ 2015u2+
 // Embedded mode on UNIX, MSVC build on Windows.
@@ -161,6 +160,20 @@ static int FilterBool(uintptr_t node_ptr, const char *query) {
     return -1;
   }
   return (int)res;
+}
+
+static double FilterNumber(uintptr_t node_ptr, const char *query, int *ok) {
+  bool c_ok;
+  double res = UastFilterNumber(ctx, (void*)node_ptr, query, &c_ok);
+  if (!c_ok) {
+    *ok = 0;
+  }
+  *ok = 1;
+  return res;
+}
+
+static const char *FilterString(uintptr_t node_ptr, const char *query) {
+  return UastFilterString(ctx, (void*)node_ptr, query);
 }
 
 static uintptr_t IteratorNew(uintptr_t node_ptr, int order) {

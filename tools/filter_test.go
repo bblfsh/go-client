@@ -15,14 +15,14 @@ func TestFilter(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestFilterWrongType(t * testing.T) {
+func TestFilterWrongType(t *testing.T) {
 	n := &uast.Node{}
 
 	_, err := Filter(n, "boolean(//*[@startPosition or @endPosition])")
 	assert.NotNil(t, err)
 }
 
-func TestFilterBool(t * testing.T) {
+func TestFilterBool(t *testing.T) {
 	n := &uast.Node{}
 
 	r, err := FilterBool(n, "boolean(0)")
@@ -32,6 +32,28 @@ func TestFilterBool(t * testing.T) {
 	r, err = FilterBool(n, "boolean(1)")
 	assert.Nil(t, err)
 	assert.True(t, r)
+}
+
+func TestFilterNumber(t *testing.T) {
+	n := &uast.Node{}
+
+	r, err := FilterNumber(n, "count(//*)")
+	assert.Nil(t, err)
+	assert.Equal(t, int(r), 1)
+
+	n.Children = []*uast.Node{&uast.Node{}, &uast.Node{}}
+	r, err = FilterNumber(n, "count(//*)")
+	assert.Nil(t, err)
+	assert.Equal(t, int(r), 3)
+}
+
+func TestFilterString(t *testing.T) {
+	n := &uast.Node{}
+	n.InternalType = "TestType"
+
+	r, err := FilterString(n, "name(//*[1])")
+    assert.Nil(t, err)
+    assert.Equal(t, r, "TestType")
 }
 
 func TestFilter_All(t *testing.T) {
