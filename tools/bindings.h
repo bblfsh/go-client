@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h> // XXX
 
 #if __has_include("uast.h") // std C++17, GCC 5.x || Clang || VSC++ 2015u2+
 // Embedded mode on UNIX, MSVC build on Windows.
@@ -167,8 +168,9 @@ static double FilterNumber(uintptr_t node_ptr, const char *query, int *ok) {
   double res = UastFilterNumber(ctx, (void*)node_ptr, query, &c_ok);
   if (!c_ok) {
     *ok = 0;
+  } else {
+    *ok = 1;
   }
-  *ok = 1;
   return res;
 }
 
