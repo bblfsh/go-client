@@ -2,6 +2,7 @@
 
 # libuast source code
 *.c
+*.cc
 *.h
 !bindings.h
 

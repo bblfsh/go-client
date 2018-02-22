@@ -2,7 +2,6 @@ package tools
 
 import (
 	"fmt"
-	"runtime/debug"
 	"sort"
 	"sync"
 	"unsafe"
@@ -50,7 +49,7 @@ var findMutex sync.Mutex
 var itMutex sync.Mutex
 var pool cstringPool
 
-// Traversal strategy for UAST trees
+// TreeOrder represents the traversal strategy for UAST trees
 type TreeOrder int
 const (
 	// PreOrder traversal
@@ -79,6 +78,29 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 	return (*uast.Node)(unsafe.Pointer(uintptr(ptr)))
 }
 
+// initFilter converts the query string and node pointer to C types. It acquires findMutex
+// and initializes the string pool. The caller should call deferFilter() after to release
+// the resources.
+func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t) {
+	findMutex.Lock()
+	cquery := pool.getCstring(xpath)
+	ptr := nodeToPtr(node)
+
+	return cquery, ptr
+}
+
+func deferFilter() {
+	findMutex.Unlock()
+	pool.release()
+}
+
+func errorFilter(name string) error {
+	error := C.Error()
+	errorf := fmt.Errorf("%s() failed: %s", name, C.GoString(error))
+	C.free(unsafe.Pointer(error))
+	return errorf
+}
+
 // Filter takes a `*uast.Node` and a xpath query and filters the tree,
 // returning the list of nodes that satisfy the given query.
 // Filter is thread-safe but not concurrent by an internal global lock.
@@ -87,25 +109,11 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, nil
 	}
 
-	// Find is not thread-safe bacause of the underlining C API
-	findMutex.Lock()
-	defer findMutex.Unlock()
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
 
-	// convert go string to C string
-	cquery := pool.getCstring(xpath)
-
-	// Make sure we release the pool of strings
-	defer pool.release()
-
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(gcpercent)
-
-	ptr := nodeToPtr(node)
 	if !C.Filter(ptr, cquery) {
-		error := C.Error()
-		return nil, fmt.Errorf("UastFilter() failed: %s", C.GoString(error))
-		C.free(unsafe.Pointer(error))
+		return nil, errorFilter("UastFilter")
 	}
 
 	nu := int(C.Size())
@@ -114,6 +122,74 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		results[i] = ptrToNode(C.At(C.int(i)))
 	}
 	return results, nil
+}
+
+// FilterBool takes a `*uast.Node` and a xpath query with a boolean
+// return type (e.g. when using XPath functions returning a boolean type).
+// FilterBool is thread-safe but not concurrent by an internal global lock.
+func FilterBool(node *uast.Node, xpath string)(bool, error) {
+	if len(xpath) == 0 {
+		return false, nil
+	}
+
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
+
+	res := C.FilterBool(ptr, cquery)
+	if (res < 0) {
+		return false, errorFilter("UastFilterBool")
+	}
+
+	var gores bool
+	if res == 0 {
+		gores = false
+	} else if res == 1{
+		gores = true
+	} else {
+		panic("Implementation error on FilterBool")
+	}
+
+	return gores, nil
+}
+
+// FilterBool takes a `*uast.Node` and a xpath query with a float
+// return type (e.g. when using XPath functions returning a float type).
+// FilterNumber is thread-safe but not concurrent by an internal global lock.
+func FilterNumber(node *uast.Node, xpath string)(float64, error) {
+	if len(xpath) == 0 {
+		return 0.0, nil
+	}
+
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
+
+	var ok C.int
+	res := C.FilterNumber(ptr, cquery, &ok)
+	if (ok == 0) {
+		return 0.0, errorFilter("UastFilterNumber")
+	}
+
+	return float64(res), nil
+}
+
+// FilterString takes a `*uast.Node` and a xpath query with a string
+// return type (e.g. when using XPath functions returning a string type).
+// FilterString is thread-safe but not concurrent by an internal global lock.
+func FilterString(node *uast.Node, xpath string)(string, error) {
+	if len(xpath) == 0 {
+		return "", nil
+	}
+
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
+
+	var res *C.char
+	res = C.FilterString(ptr, cquery)
+	if (res == nil) {
+		return "", errorFilter("UastFilterString")
+	}
+
+	return C.GoString(res), nil
 }
 
 //export goGetInternalType
@@ -266,16 +342,13 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	itMutex.Lock()
 	defer itMutex.Unlock()
 
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(gcpercent)
-
 	ptr := nodeToPtr(node)
 	it := C.IteratorNew(ptr, C.int(order))
 	if it == 0 {
 		error := C.Error()
-		return nil, fmt.Errorf("UastIteratorNew() failed: %s", C.GoString(error))
+		errorf := fmt.Errorf("UastIteratorNew() failed: %s", C.GoString(error))
 		C.free(unsafe.Pointer(error))
+		return nil, errorf
 	}
 
 	return &Iterator {
@@ -294,10 +367,6 @@ func (i *Iterator) Next() (*uast.Node, error) {
 	if i.finished {
 		return nil, fmt.Errorf("Next() called on finished iterator")
 	}
-
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(gcpercent)
 
 	pnode := C.IteratorNext(i.iterPtr);
 	if pnode == 0 {

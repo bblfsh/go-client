@@ -153,6 +153,30 @@ static bool Filter(uintptr_t node_ptr, const char *query) {
   return nodes != NULL;
 }
 
+static int FilterBool(uintptr_t node_ptr, const char *query) {
+  bool ok;
+  bool res = UastFilterBool(ctx, (void*)node_ptr, query, &ok);
+  if (!ok) {
+    return -1;
+  }
+  return (int)res;
+}
+
+static double FilterNumber(uintptr_t node_ptr, const char *query, int *ok) {
+  bool c_ok;
+  double res = UastFilterNumber(ctx, (void*)node_ptr, query, &c_ok);
+  if (!c_ok) {
+    *ok = 0;
+  } else {
+    *ok = 1;
+  }
+  return res;
+}
+
+static const char *FilterString(uintptr_t node_ptr, const char *query) {
+  return UastFilterString(ctx, (void*)node_ptr, query);
+}
+
 static uintptr_t IteratorNew(uintptr_t node_ptr, int order) {
   return (uintptr_t)UastIteratorNew(ctx, (void *)node_ptr, order);
 }
@@ -161,7 +185,7 @@ static uintptr_t IteratorNext(uintptr_t iter) {
   return (uintptr_t)UastIteratorNext((void*)iter);
 }
 
-static uintptr_t IteratorFree(uintptr_t iter) {
+static void IteratorFree(uintptr_t iter) {
   UastIteratorFree((void*)iter);
 }
 
