@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <stdio.h> // XXX
 
 #if __has_include("uast.h") // std C++17, GCC 5.x || Clang || VSC++ 2015u2+
 // Embedded mode on UNIX, MSVC build on Windows.

@@ -2,7 +2,6 @@ package tools
 
 import (
 	"fmt"
-	"runtime/debug"
 	"sort"
 	"sync"
 	"unsafe"
@@ -79,13 +78,20 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 	return (*uast.Node)(unsafe.Pointer(uintptr(ptr)))
 }
 
-func initFilter(node *uast.Node, xpath string) (*C.char, int, C.uintptr_t) {
+// initFilter converts the query string and node pointer to C types. It acquires findMutex
+// and initializes the string pool. The caller should call deferFilter() after to release
+// the resources.
+func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t) {
 	findMutex.Lock()
 	cquery := pool.getCstring(xpath)
-	gcpercent := debug.SetGCPercent(-1)
 	ptr := nodeToPtr(node)
 
-	return cquery, gcpercent, ptr
+	return cquery, ptr
+}
+
+func deferFilter() {
+	findMutex.Unlock()
+	pool.release()
 }
 
 func errorFilter(name string) error {
@@ -103,10 +109,8 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, nil
 	}
 
-	cquery, gcpercent, ptr := initFilter(node, xpath)
-	defer findMutex.Unlock()
-	defer pool.release()
-	defer debug.SetGCPercent(gcpercent)
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
 
 	if !C.Filter(ptr, cquery) {
 		return nil, errorFilter("UastFilter")
@@ -128,10 +132,8 @@ func FilterBool(node *uast.Node, xpath string)(bool, error) {
 		return false, nil
 	}
 
-	cquery, gcpercent, ptr := initFilter(node, xpath)
-	defer findMutex.Unlock()
-	defer pool.release()
-	defer debug.SetGCPercent(gcpercent)
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
 
 	res := C.FilterBool(ptr, cquery)
 	if (res < 0) {
@@ -158,10 +160,8 @@ func FilterNumber(node *uast.Node, xpath string)(float64, error) {
 		return 0.0, nil
 	}
 
-	cquery, gcpercent, ptr := initFilter(node, xpath)
-	defer findMutex.Unlock()
-	defer pool.release()
-	defer debug.SetGCPercent(gcpercent)
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
 
 	var ok C.int
 	res := C.FilterNumber(ptr, cquery, &ok)
@@ -180,10 +180,8 @@ func FilterString(node *uast.Node, xpath string)(string, error) {
 		return "", nil
 	}
 
-	cquery, gcpercent, ptr := initFilter(node, xpath)
-	defer findMutex.Unlock()
-	defer pool.release()
-	defer debug.SetGCPercent(gcpercent)
+	cquery, ptr := initFilter(node, xpath)
+	defer deferFilter()
 
 	var res *C.char
 	res = C.FilterString(ptr, cquery)
@@ -344,10 +342,6 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	itMutex.Lock()
 	defer itMutex.Unlock()
 
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(gcpercent)
-
 	ptr := nodeToPtr(node)
 	it := C.IteratorNew(ptr, C.int(order))
 	if it == 0 {
@@ -373,10 +367,6 @@ func (i *Iterator) Next() (*uast.Node, error) {
 	if i.finished {
 		return nil, fmt.Errorf("Next() called on finished iterator")
 	}
-
-	// stop GC
-	gcpercent := debug.SetGCPercent(-1)
-	defer debug.SetGCPercent(gcpercent)
 
 	pnode := C.IteratorNext(i.iterPtr);
 	if pnode == 0 {
