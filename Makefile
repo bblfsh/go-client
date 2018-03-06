@@ -1,6 +1,6 @@
 # Package configuration
 PROJECT = client-go
-LIBUAST_VERSION ?= 1.8.2
+LIBUAST_VERSION ?= 1.9.0
 GOPATH ?= $(shell go env GOPATH)
 
 ifneq ($(OS),Windows_NT)
