@@ -31,6 +31,13 @@ func nodeTree() *uast.Node {
 	return parent
 }
 
+func testIterNode(t *testing.T, iter *Iterator, nodeType string) {
+	node, err := iter.Next()
+	assert.Nil(t, err)
+	assert.NotNil(t, node)
+	assert.Equal(t, node.InternalType, nodeType)
+}
+
 func TestIter_Range(t *testing.T) {
 	parent := nodeTree()
 
@@ -87,32 +94,13 @@ func TestIter_PreOrder(t *testing.T) {
 	assert.NotNil(t, iter)
 	defer iter.Dispose()
 
+	testIterNode(t, iter, "parent")
+	testIterNode(t, iter, "child1")
+	testIterNode(t, iter, "child2")
+	testIterNode(t, iter, "subchild21")
+	testIterNode(t, iter, "subchild22")
+
 	node, err := iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "parent")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child1")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child2")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild21")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild22")
-
-	node, err = iter.Next()
 	assert.Nil(t, err)
 	assert.Nil(t, node)
 }
@@ -125,32 +113,13 @@ func TestIter_PostOrder(t *testing.T) {
 	assert.NotNil(t, iter)
 	defer iter.Dispose()
 
+	testIterNode(t, iter, "child1")
+	testIterNode(t, iter, "subchild21")
+	testIterNode(t, iter, "subchild22")
+	testIterNode(t, iter, "child2")
+	testIterNode(t, iter, "parent")
+
 	node, err := iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child1")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild21")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild22")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child2")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "parent")
-
-	node, err = iter.Next()
 	assert.Nil(t, err)
 	assert.Nil(t, node)
 }
@@ -163,32 +132,13 @@ func TestIter_LevelOrder(t *testing.T) {
 	assert.NotNil(t, iter)
 	defer iter.Dispose()
 
+	testIterNode(t, iter, "parent")
+	testIterNode(t, iter, "child1")
+	testIterNode(t, iter, "child2")
+	testIterNode(t, iter, "subchild21")
+	testIterNode(t, iter, "subchild22")
+
 	node, err := iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "parent")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child1")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child2")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild21")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild22")
-
-	node, err = iter.Next()
 	assert.Nil(t, err)
 	assert.Nil(t, node)
 }
@@ -225,34 +175,13 @@ func TestIter_PositionOrder(t *testing.T) {
 	assert.NotNil(t, iter)
 	defer iter.Dispose()
 
+	testIterNode(t, iter, "parent")
+	testIterNode(t, iter, "subchild22")
+	testIterNode(t, iter, "subchild21")
+	testIterNode(t, iter, "child1")
+	testIterNode(t, iter, "child2")
+
 	node, err := iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "parent")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "subchild22")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	nodeType := node.InternalType
-	assert.True(t, nodeType == "subchild21" || nodeType == "child1")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	nodeType = node.InternalType
-	assert.True(t, nodeType == "subchild21" || nodeType == "child1")
-
-	node, err = iter.Next()
-	assert.Nil(t, err)
-	assert.NotNil(t, node)
-	assert.Equal(t, node.InternalType, "child2")
-
-	node, err = iter.Next()
 	assert.Nil(t, err)
 	assert.Nil(t, node)
 }

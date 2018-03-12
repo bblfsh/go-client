@@ -58,7 +58,7 @@ const (
 	PostOrder
 	// LevelOrder (aka breadth-first) traversal
 	LevelOrder
-	// Position order (by node position in the source file)
+	// PositionOrder by node position in the source file
 	PositionOrder
 )
 
