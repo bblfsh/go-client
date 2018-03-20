@@ -58,6 +58,8 @@ const (
 	PostOrder
 	// LevelOrder (aka breadth-first) traversal
 	LevelOrder
+	// PositionOrder by node position in the source file
+	PositionOrder
 )
 
 // Iterator allows for traversal over a UAST tree.
