@@ -51,6 +51,7 @@ var pool cstringPool
 
 // TreeOrder represents the traversal strategy for UAST trees
 type TreeOrder int
+
 const (
 	// PreOrder traversal
 	PreOrder TreeOrder = iota
@@ -64,7 +65,8 @@ const (
 
 // Iterator allows for traversal over a UAST tree.
 type Iterator struct {
-	iterPtr C.uintptr_t
+	root     *uast.Node
+	iterPtr  C.uintptr_t
 	finished bool
 }
 
@@ -129,7 +131,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 // FilterBool takes a `*uast.Node` and a xpath query with a boolean
 // return type (e.g. when using XPath functions returning a boolean type).
 // FilterBool is thread-safe but not concurrent by an internal global lock.
-func FilterBool(node *uast.Node, xpath string)(bool, error) {
+func FilterBool(node *uast.Node, xpath string) (bool, error) {
 	if len(xpath) == 0 {
 		return false, nil
 	}
@@ -138,14 +140,14 @@ func FilterBool(node *uast.Node, xpath string)(bool, error) {
 	defer deferFilter()
 
 	res := C.FilterBool(ptr, cquery)
-	if (res < 0) {
+	if res < 0 {
 		return false, errorFilter("UastFilterBool")
 	}
 
 	var gores bool
 	if res == 0 {
 		gores = false
-	} else if res == 1{
+	} else if res == 1 {
 		gores = true
 	} else {
 		panic("Implementation error on FilterBool")
@@ -157,7 +159,7 @@ func FilterBool(node *uast.Node, xpath string)(bool, error) {
 // FilterBool takes a `*uast.Node` and a xpath query with a float
 // return type (e.g. when using XPath functions returning a float type).
 // FilterNumber is thread-safe but not concurrent by an internal global lock.
-func FilterNumber(node *uast.Node, xpath string)(float64, error) {
+func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 	if len(xpath) == 0 {
 		return 0.0, nil
 	}
@@ -167,7 +169,7 @@ func FilterNumber(node *uast.Node, xpath string)(float64, error) {
 
 	var ok C.int
 	res := C.FilterNumber(ptr, cquery, &ok)
-	if (ok == 0) {
+	if ok == 0 {
 		return 0.0, errorFilter("UastFilterNumber")
 	}
 
@@ -177,7 +179,7 @@ func FilterNumber(node *uast.Node, xpath string)(float64, error) {
 // FilterString takes a `*uast.Node` and a xpath query with a string
 // return type (e.g. when using XPath functions returning a string type).
 // FilterString is thread-safe but not concurrent by an internal global lock.
-func FilterString(node *uast.Node, xpath string)(string, error) {
+func FilterString(node *uast.Node, xpath string) (string, error) {
 	if len(xpath) == 0 {
 		return "", nil
 	}
@@ -187,7 +189,7 @@ func FilterString(node *uast.Node, xpath string)(string, error) {
 
 	var res *C.char
 	res = C.FilterString(ptr, cquery)
-	if (res == nil) {
+	if res == nil {
 		return "", errorFilter("UastFilterString")
 	}
 
@@ -353,8 +355,9 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 		return nil, errorf
 	}
 
-	return &Iterator {
-		iterPtr: it,
+	return &Iterator{
+		root:     node,
+		iterPtr:  it,
 		finished: false,
 	}, nil
 }
@@ -370,7 +373,7 @@ func (i *Iterator) Next() (*uast.Node, error) {
 		return nil, fmt.Errorf("Next() called on finished iterator")
 	}
 
-	pnode := C.IteratorNext(i.iterPtr);
+	pnode := C.IteratorNext(i.iterPtr)
 	if pnode == 0 {
 		// End of the iteration
 		i.finished = true
@@ -381,7 +384,7 @@ func (i *Iterator) Next() (*uast.Node, error) {
 
 // Iterate function is similar to Next() but returns the `Node`s in a channel. It's mean
 // to be used with the `for node := range myIter.Iterate() {}` loop.
-func (i *Iterator) Iterate() <- chan *uast.Node {
+func (i *Iterator) Iterate() <-chan *uast.Node {
 	c := make(chan *uast.Node)
 	if i.finished {
 		close(c)
@@ -415,5 +418,5 @@ func (i *Iterator) Dispose() {
 		i.iterPtr = 0
 	}
 	i.finished = true
+	i.root = nil
 }
-

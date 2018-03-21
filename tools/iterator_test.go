@@ -8,25 +8,25 @@ import (
 )
 
 func nodeTree() *uast.Node {
-	child1 := &uast.Node {
+	child1 := &uast.Node{
 		InternalType: "child1",
 	}
 
-	subchild21 := &uast.Node {
+	subchild21 := &uast.Node{
 		InternalType: "subchild21",
 	}
 
-	subchild22 := &uast.Node {
+	subchild22 := &uast.Node{
 		InternalType: "subchild22",
 	}
 
-	child2 := &uast.Node {
+	child2 := &uast.Node{
 		InternalType: "child2",
-		Children: []*uast.Node{subchild21, subchild22},
+		Children:     []*uast.Node{subchild21, subchild22},
 	}
 	parent := &uast.Node{
 		InternalType: "parent",
-		Children: []*uast.Node{child1, child2},
+		Children:     []*uast.Node{child1, child2},
 	}
 	return parent
 }
@@ -62,7 +62,8 @@ func TestIter_Finished(t *testing.T) {
 
 	iter, err := NewIterator(parent, PreOrder)
 	defer iter.Dispose()
-	for _ = range iter.Iterate() {}
+	for _ = range iter.Iterate() {
+	}
 
 	_, err = iter.Next()
 	assert.NotNil(t, err)
@@ -144,30 +145,30 @@ func TestIter_LevelOrder(t *testing.T) {
 }
 
 func TestIter_PositionOrder(t *testing.T) {
-	child1 := &uast.Node {
-		InternalType: "child1",
-		StartPosition: &uast.Position{Offset:10, Line:0, Col:0},
+	child1 := &uast.Node{
+		InternalType:  "child1",
+		StartPosition: &uast.Position{Offset: 10, Line: 0, Col: 0},
 	}
 
-	subchild21 := &uast.Node {
-		InternalType: "subchild21",
-		StartPosition: &uast.Position{Offset:10, Line:0, Col:0},
+	subchild21 := &uast.Node{
+		InternalType:  "subchild21",
+		StartPosition: &uast.Position{Offset: 10, Line: 0, Col: 0},
 	}
 
-	subchild22 := &uast.Node {
-		InternalType: "subchild22",
-		StartPosition: &uast.Position{Offset:5, Line:0, Col:0},
+	subchild22 := &uast.Node{
+		InternalType:  "subchild22",
+		StartPosition: &uast.Position{Offset: 5, Line: 0, Col: 0},
 	}
 
-	child2 := &uast.Node {
-		InternalType: "child2",
-		Children: []*uast.Node{subchild21, subchild22},
-		StartPosition: &uast.Position{Offset:15, Line:0, Col:0},
+	child2 := &uast.Node{
+		InternalType:  "child2",
+		Children:      []*uast.Node{subchild21, subchild22},
+		StartPosition: &uast.Position{Offset: 15, Line: 0, Col: 0},
 	}
 	parent := &uast.Node{
-		InternalType: "parent",
-		Children: []*uast.Node{child1, child2},
-		StartPosition: &uast.Position{Offset:0, Line:0, Col:0},
+		InternalType:  "parent",
+		Children:      []*uast.Node{child1, child2},
+		StartPosition: &uast.Position{Offset: 0, Line: 0, Col: 0},
 	}
 
 	iter, err := NewIterator(parent, PositionOrder)
