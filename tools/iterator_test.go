@@ -177,8 +177,8 @@ func TestIter_PositionOrder(t *testing.T) {
 
 	testIterNode(t, iter, "parent")
 	testIterNode(t, iter, "subchild22")
-	testIterNode(t, iter, "subchild21")
 	testIterNode(t, iter, "child1")
+	testIterNode(t, iter, "subchild21")
 	testIterNode(t, iter, "child2")
 
 	node, err := iter.Next()
