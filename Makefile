@@ -1,6 +1,6 @@
 # Package configuration
 PROJECT = client-go
-LIBUAST_VERSION ?= 1.9.0
+LIBUAST_VERSION ?= 1.9.1
 GOPATH ?= $(shell go env GOPATH)
 
 ifneq ($(OS),Windows_NT)
@@ -25,7 +25,7 @@ GOGET ?= go get
 
 clean: clean-libuast
 clean-libuast:
-	find ./ -name '*.[h,c]' ! -name 'bindings.h' -exec rm -f {} +
+	find ./  -regex '.*\.[h,c]c?' ! -name 'bindings.h' -exec rm -f {} +
 
 dependencies: cgo-dependencies
 ifneq ($(OS),Windows_NT)
