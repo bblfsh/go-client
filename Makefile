@@ -3,6 +3,8 @@ PROJECT = client-go
 LIBUAST_VERSION ?= 1.9.1
 GOPATH ?= $(shell go env GOPATH)
 
+TOOLS_FOLDER = tools
+
 ifneq ($(OS),Windows_NT)
 COPY = cp
 else
@@ -10,17 +12,13 @@ COPY = copy
 endif
 
 # Including ci Makefile
-MAKEFILE = Makefile.main
-CI_REPOSITORY = https://github.com/src-d/ci.git
-CI_FOLDER = .ci
-
-TOOLS_FOLDER = tools
-
+CI_REPOSITORY ?= https://github.com/src-d/ci.git
+CI_PATH ?= $(shell pwd)/.ci
+MAKEFILE := $(CI_PATH)/Makefile.main
 $(MAKEFILE):
-	@(git clone --quiet $(CI_REPOSITORY) $(CI_FOLDER) && \
-	$(COPY) $(CI_FOLDER)/$(MAKEFILE) .);
-
+	git clone --quiet --depth 1 $(CI_REPOSITORY) $(CI_PATH);
 -include $(MAKEFILE)
+
 GOGET ?= go get
 
 clean: clean-libuast
