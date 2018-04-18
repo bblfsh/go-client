@@ -27,10 +27,22 @@ clean-libuast:
 	find ./  -regex '.*\.[h,c]c?' ! -name 'bindings.h' -exec rm -f {} +
 
 ifneq ($(OS),Windows_NT)
-cgo-dependencies:
+cgo-dependencies: check-gcc
 	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
 	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
 	rm -rf libuast-v$(LIBUAST_VERSION)
+check-gcc:
+	@if \
+		[[ -z `which gcc` ]] || \
+		[[ -z `which g++` ]] || \
+		[[ 5 -gt `gcc -dumpversion | sed -r 's/^[^0-9]*([0-9]+).*/\1/g'` ]] || \
+		[[ 5 -gt `g++ -dumpversion | sed -r 's/^[^0-9]*([0-9]+).*/\1/g'` ]]; \
+	then \
+		echo -e "error; GCC and G++ v5 or greater are required \n"; \
+		echo -e "- GCC: `gcc --version` \n"; \
+		echo -e "- G++: `g++ --version` \n"; \
+		exit 1; \
+	fi;
 else
 cgo-dependencies:
 	go get -v github.com/mholt/archiver/cmd/archiver
