@@ -3,7 +3,7 @@ package bblfsh
 import (
 	"context"
 	"io/ioutil"
-	"path"
+	"path/filepath"
 
 	"gopkg.in/bblfsh/sdk.v1/protocol"
 )
@@ -24,13 +24,13 @@ func (r *ParseRequest) Language(language string) *ParseRequest {
 
 // ReadFile loads a file given a local path and sets the content and the
 // filename of the request.
-func (r *ParseRequest) ReadFile(filepath string) *ParseRequest {
-	data, err := ioutil.ReadFile(filepath)
+func (r *ParseRequest) ReadFile(fp string) *ParseRequest {
+	data, err := ioutil.ReadFile(fp)
 	if err != nil {
 		r.err = err
 	} else {
 		r.internal.Content = string(data)
-		r.internal.Filename = path.Base(filepath)
+		r.internal.Filename = filepath.Base(fp)
 	}
 
 	return r
@@ -87,13 +87,13 @@ func (r *NativeParseRequest) Language(language string) *NativeParseRequest {
 
 // ReadFile loads a file given a local path and sets the content and the
 // filename of the request.
-func (r *NativeParseRequest) ReadFile(filepath string) *NativeParseRequest {
-	data, err := ioutil.ReadFile(filepath)
+func (r *NativeParseRequest) ReadFile(fp string) *NativeParseRequest {
+	data, err := ioutil.ReadFile(fp)
 	if err != nil {
 		r.err = err
 	} else {
 		r.internal.Content = string(data)
-		r.internal.Filename = path.Base(filepath)
+		r.internal.Filename = filepath.Base(fp)
 	}
 
 	return r
