@@ -63,5 +63,5 @@ func TestClient_NewSupportedLanguagesRequest(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, len(res.Errors), 0)
-	require.NotNil(t, res.Drivers)
+	require.NotNil(t, res.Languages)
 }
