@@ -155,3 +155,25 @@ func (r *VersionRequest) DoWithContext(ctx context.Context) (*protocol.VersionRe
 
 	return r.client.service.Version(ctx, &protocol.VersionRequest{})
 }
+
+// SupportedLanguagesRequest is a request to retrieve the supported languages.
+type SupportedLanguagesRequest struct {
+	client *Client
+	err    error
+}
+
+// Do performs the actual parsing by serializing the request, sending it to
+// bblfsd and waiting for the response.
+func (r *SupportedLanguagesRequest) Do() (*protocol.SupportedLanguagesResponse, error) {
+	return r.DoWithContext(context.Background())
+}
+
+// DoWithContext does the same as Do(), but sopporting cancellation by the use
+// of Go contexts.
+func (r *SupportedLanguagesRequest) DoWithContext(ctx context.Context) (*protocol.SupportedLanguagesResponse, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+
+	return r.client.service.SupportedLanguages(ctx, &protocol.SupportedLanguagesRequest{})
+}
