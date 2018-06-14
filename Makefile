@@ -6,8 +6,10 @@ GOPATH ?= $(shell go env GOPATH)
 TOOLS_FOLDER = tools
 
 ifneq ($(OS),Windows_NT)
+UNAME := $(shell uname)
 COPY = cp
 else
+UNAME := Windows_NT
 COPY = copy
 endif
 
@@ -26,11 +28,18 @@ clean: clean-libuast
 clean-libuast:
 	find ./  -regex '.*\.[h,c]c?' ! -name 'bindings.h' -exec rm -f {} +
 
-ifneq ($(OS),Windows_NT)
-cgo-dependencies: check-gcc
-	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
-	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
-	rm -rf libuast-v$(LIBUAST_VERSION)
+ifeq ($(OS),Windows_NT)
+cgo-dependencies:
+	go get -v github.com/mholt/archiver/cmd/archiver
+	cd $(TOOLS_FOLDER) && \
+	curl -SLko binaries.win64.mingw.zip https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/binaries.win64.mingw.zip && \
+	$(GOPATH)\bin\archiver open binaries.win64.mingw.zip && \
+	del /q binaries.win64.mingw.zip && echo done
+else
+ifeq ($(UNAME),Darwin)
+cgo-dependencies: unix-dependencies
+else
+cgo-dependencies: | check-gcc unix-dependencies
 check-gcc:
 	@if \
 		[[ -z `which gcc` ]] || \
@@ -43,12 +52,10 @@ check-gcc:
 		echo -e "- G++: `g++ --version` \n"; \
 		exit 1; \
 	fi;
-else
-cgo-dependencies:
-	go get -v github.com/mholt/archiver/cmd/archiver
-	cd $(TOOLS_FOLDER) && \
-	curl -SLko binaries.win64.mingw.zip https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/binaries.win64.mingw.zip && \
-	$(GOPATH)\bin\archiver open binaries.win64.mingw.zip && \
-	del /q binaries.win64.mingw.zip && echo done
-endif  # !Windows_NT
+endif
+endif
 
+unix-dependencies:
+	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
+	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
+	rm -rf libuast-v$(LIBUAST_VERSION)
