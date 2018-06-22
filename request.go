@@ -1,12 +1,30 @@
 package bblfsh
 
 import (
+	"bytes"
 	"context"
 	"io/ioutil"
 	"path/filepath"
 
 	"gopkg.in/bblfsh/sdk.v1/protocol"
 )
+
+// FatalError is returned when response is returned with Fatal status code.
+type FatalError []string
+
+func (e FatalError) Error() string {
+	if n := len(e); n == 0 {
+		return "fatal error"
+	} else if n == 1 {
+		return e[0]
+	}
+	buf := bytes.NewBuffer(nil)
+	for _, s := range e {
+		buf.WriteString(s)
+		buf.WriteRune('\n')
+	}
+	return buf.String()
+}
 
 // ParseRequest is a parsing request to get the UAST.
 type ParseRequest struct {
@@ -68,7 +86,13 @@ func (r *ParseRequest) DoWithContext(ctx context.Context) (*protocol.ParseRespon
 		return nil, r.err
 	}
 
-	return r.client.service.Parse(ctx, &r.internal)
+	resp, err := r.client.service.Parse(ctx, &r.internal)
+	if err != nil {
+		return nil, err
+	} else if resp.Status == protocol.Fatal {
+		return nil, FatalError(resp.Errors)
+	}
+	return resp, nil
 }
 
 // NativeParseRequest is a parsing request to get the AST.
@@ -131,7 +155,13 @@ func (r *NativeParseRequest) DoWithContext(ctx context.Context) (*protocol.Nativ
 		return nil, r.err
 	}
 
-	return r.client.service.NativeParse(ctx, &r.internal)
+	resp, err := r.client.service.NativeParse(ctx, &r.internal)
+	if err != nil {
+		return nil, err
+	} else if resp.Status == protocol.Fatal {
+		return nil, FatalError(resp.Errors)
+	}
+	return resp, nil
 }
 
 // VersionRequest is a request to retrieve the version of the server.
@@ -153,7 +183,13 @@ func (r *VersionRequest) DoWithContext(ctx context.Context) (*protocol.VersionRe
 		return nil, r.err
 	}
 
-	return r.client.service.Version(ctx, &protocol.VersionRequest{})
+	resp, err := r.client.service.Version(ctx, &protocol.VersionRequest{})
+	if err != nil {
+		return nil, err
+	} else if resp.Status == protocol.Fatal {
+		return nil, FatalError(resp.Errors)
+	}
+	return resp, nil
 }
 
 // SupportedLanguagesRequest is a request to retrieve the supported languages.
@@ -175,5 +211,11 @@ func (r *SupportedLanguagesRequest) DoWithContext(ctx context.Context) (*protoco
 		return nil, r.err
 	}
 
-	return r.client.service.SupportedLanguages(ctx, &protocol.SupportedLanguagesRequest{})
+	resp, err := r.client.service.SupportedLanguages(ctx, &protocol.SupportedLanguagesRequest{})
+	if err != nil {
+		return nil, err
+	} else if resp.Status == protocol.Fatal {
+		return nil, FatalError(resp.Errors)
+	}
+	return resp, nil
 }
