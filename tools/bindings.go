@@ -45,9 +45,13 @@ import (
 // #include "bindings.h"
 import "C"
 
-var findMutex sync.Mutex
+var (
+	findMutex sync.Mutex
+	spool     cstringPool
+	kpool     = make(map[*uast.Node][]string)
+)
+
 var itMutex sync.Mutex
-var pool cstringPool
 
 // TreeOrder represents the traversal strategy for UAST trees
 type TreeOrder int
@@ -87,11 +91,12 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 // the resources.
 func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t, func()) {
 	findMutex.Lock()
-	cquery := pool.getCstring(xpath)
+	cquery := spool.getCstring(xpath)
 	ptr := nodeToPtr(node)
 
 	return cquery, ptr, func() {
-		pool.release()
+		spool.release()
+		kpool = make(map[*uast.Node][]string)
 		findMutex.Unlock()
 	}
 }
@@ -196,12 +201,12 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 
 //export goGetInternalType
 func goGetInternalType(ptr C.uintptr_t) *C.char {
-	return pool.getCstring(ptrToNode(ptr).InternalType)
+	return spool.getCstring(ptrToNode(ptr).InternalType)
 }
 
 //export goGetToken
 func goGetToken(ptr C.uintptr_t) *C.char {
-	return pool.getCstring(ptrToNode(ptr).Token)
+	return spool.getCstring(ptrToNode(ptr).Token)
 }
 
 //export goGetChildrenSize
@@ -231,25 +236,32 @@ func goGetPropertiesSize(ptr C.uintptr_t) C.int {
 	return C.int(len(ptrToNode(ptr).Properties))
 }
 
-//export goGetPropertyKey
-func goGetPropertyKey(ptr C.uintptr_t, index C.int) *C.char {
-	var keys []string
-	for k := range ptrToNode(ptr).Properties {
-		keys = append(keys, k)
+func getPropertyKeys(ptr C.uintptr_t) []string {
+	node := ptrToNode(ptr)
+	if keys, ok := kpool[node]; ok {
+		return keys
 	}
-	sort.Strings(keys)
-	return pool.getCstring(keys[int(index)])
-}
-
-//export goGetPropertyValue
-func goGetPropertyValue(ptr C.uintptr_t, index C.int) *C.char {
-	p := ptrToNode(ptr).Properties
-	var keys []string
+	p := node.Properties
+	keys := make([]string, 0, len(p))
 	for k := range p {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	return pool.getCstring(p[keys[int(index)]])
+	kpool[node] = keys
+	return keys
+}
+
+//export goGetPropertyKey
+func goGetPropertyKey(ptr C.uintptr_t, index C.int) *C.char {
+	keys := getPropertyKeys(ptr)
+	return spool.getCstring(keys[int(index)])
+}
+
+//export goGetPropertyValue
+func goGetPropertyValue(ptr C.uintptr_t, index C.int) *C.char {
+	keys := getPropertyKeys(ptr)
+	p := ptrToNode(ptr).Properties
+	return spool.getCstring(p[keys[int(index)]])
 }
 
 //export goHasStartOffset
