@@ -96,11 +96,11 @@ func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t, func()) {
 	}
 }
 
-func errorFilter(name string) error {
-	error := C.Error()
-	errorf := fmt.Errorf("%s() failed: %s", name, C.GoString(error))
-	C.free(unsafe.Pointer(error))
-	return errorf
+func cError(name string) error {
+	e := C.Error()
+	err := fmt.Errorf("%s() failed: %s", name, C.GoString(e))
+	C.free(unsafe.Pointer(e))
+	return err
 }
 
 // Filter takes a `*uast.Node` and a xpath query and filters the tree,
@@ -115,7 +115,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	defer closer()
 
 	if !C.Filter(ptr, cquery) {
-		return nil, errorFilter("UastFilter")
+		return nil, cError("UastFilter")
 	}
 
 	nu := int(C.Size())
@@ -139,7 +139,7 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 
 	res := C.FilterBool(ptr, cquery)
 	if res < 0 {
-		return false, errorFilter("UastFilterBool")
+		return false, cError("UastFilterBool")
 	}
 
 	var gores bool
@@ -168,7 +168,7 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 	var ok C.int
 	res := C.FilterNumber(ptr, cquery, &ok)
 	if ok == 0 {
-		return 0.0, errorFilter("UastFilterNumber")
+		return 0.0, cError("UastFilterNumber")
 	}
 
 	return float64(res), nil
@@ -188,7 +188,7 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 	var res *C.char
 	res = C.FilterString(ptr, cquery)
 	if res == nil {
-		return "", errorFilter("UastFilterString")
+		return "", cError("UastFilterString")
 	}
 
 	return C.GoString(res), nil
@@ -347,10 +347,7 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	ptr := nodeToPtr(node)
 	it := C.IteratorNew(ptr, C.int(order))
 	if it == 0 {
-		error := C.Error()
-		errorf := fmt.Errorf("UastIteratorNew() failed: %s", C.GoString(error))
-		C.free(unsafe.Pointer(error))
-		return nil, errorf
+		return nil, cError("UastIteratorNew")
 	}
 
 	return &Iterator{
