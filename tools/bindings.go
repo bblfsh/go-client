@@ -83,19 +83,17 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 }
 
 // initFilter converts the query string and node pointer to C types. It acquires findMutex
-// and initializes the string pool. The caller should call deferFilter() after to release
+// and initializes the string pool. The caller should defer returned function to release
 // the resources.
-func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t) {
+func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t, func()) {
 	findMutex.Lock()
 	cquery := pool.getCstring(xpath)
 	ptr := nodeToPtr(node)
 
-	return cquery, ptr
-}
-
-func deferFilter() {
-	findMutex.Unlock()
-	pool.release()
+	return cquery, ptr, func() {
+		pool.release()
+		findMutex.Unlock()
+	}
 }
 
 func errorFilter(name string) error {
@@ -113,8 +111,8 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, nil
 	}
 
-	cquery, ptr := initFilter(node, xpath)
-	defer deferFilter()
+	cquery, ptr, closer := initFilter(node, xpath)
+	defer closer()
 
 	if !C.Filter(ptr, cquery) {
 		return nil, errorFilter("UastFilter")
@@ -136,8 +134,8 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 		return false, nil
 	}
 
-	cquery, ptr := initFilter(node, xpath)
-	defer deferFilter()
+	cquery, ptr, closer := initFilter(node, xpath)
+	defer closer()
 
 	res := C.FilterBool(ptr, cquery)
 	if res < 0 {
@@ -164,8 +162,8 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 		return 0, nil
 	}
 
-	cquery, ptr := initFilter(node, xpath)
-	defer deferFilter()
+	cquery, ptr, closer := initFilter(node, xpath)
+	defer closer()
 
 	var ok C.int
 	res := C.FilterNumber(ptr, cquery, &ok)
@@ -184,8 +182,8 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 		return "", nil
 	}
 
-	cquery, ptr := initFilter(node, xpath)
-	defer deferFilter()
+	cquery, ptr, closer := initFilter(node, xpath)
+	defer closer()
 
 	var res *C.char
 	res = C.FilterString(ptr, cquery)
