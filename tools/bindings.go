@@ -109,7 +109,7 @@ func errorFilter(name string) error {
 // returning the list of nodes that satisfy the given query.
 // Filter is thread-safe but not concurrent by an internal global lock.
 func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
-	if len(xpath) == 0 {
+	if len(xpath) == 0 || node == nil {
 		return nil, nil
 	}
 
@@ -132,7 +132,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 // return type (e.g. when using XPath functions returning a boolean type).
 // FilterBool is thread-safe but not concurrent by an internal global lock.
 func FilterBool(node *uast.Node, xpath string) (bool, error) {
-	if len(xpath) == 0 {
+	if len(xpath) == 0 || node == nil {
 		return false, nil
 	}
 
@@ -160,8 +160,8 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 // return type (e.g. when using XPath functions returning a float type).
 // FilterNumber is thread-safe but not concurrent by an internal global lock.
 func FilterNumber(node *uast.Node, xpath string) (float64, error) {
-	if len(xpath) == 0 {
-		return 0.0, nil
+	if len(xpath) == 0 || node == nil {
+		return 0, nil
 	}
 
 	cquery, ptr := initFilter(node, xpath)
@@ -180,7 +180,7 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 // return type (e.g. when using XPath functions returning a string type).
 // FilterString is thread-safe but not concurrent by an internal global lock.
 func FilterString(node *uast.Node, xpath string) (string, error) {
-	if len(xpath) == 0 {
+	if len(xpath) == 0 || node == nil {
 		return "", nil
 	}
 
