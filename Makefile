@@ -1,6 +1,6 @@
 # Package configuration
 PROJECT = client-go
-LIBUAST_VERSION ?= 1.9.1
+LIBUAST_VERSION ?= 1.9.4
 GOPATH ?= $(shell go env GOPATH)
 
 TOOLS_FOLDER = tools
@@ -56,6 +56,6 @@ endif
 endif
 
 unix-dependencies:
-	curl -SL https://github.com/bblfsh/libuast/releases/download/v$(LIBUAST_VERSION)/libuast-v$(LIBUAST_VERSION).tar.gz | tar xz
-	mv libuast-v$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
-	rm -rf libuast-v$(LIBUAST_VERSION)
+	curl -SL https://github.com/bblfsh/libuast/archive/v$(LIBUAST_VERSION).tar.gz | tar xz
+	mv libuast-$(LIBUAST_VERSION)/src/* $(TOOLS_FOLDER)/.
+	rm -rf libuast-$(LIBUAST_VERSION)
