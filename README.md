@@ -10,7 +10,7 @@ and for analysing UASTs with the functionality provided by [libuast](https://git
 The recommended way to install *client-go* is:
 
 ```sh
-go get -d -u gopkg.in/bblfsh/client-go.v2/...
+go get -u gopkg.in/bblfsh/client-go.v2/...
 ```
 
 Windows build is supported, provided by you have `make` and `curl` in your `%PATH%`.
