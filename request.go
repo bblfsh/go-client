@@ -90,7 +90,7 @@ func (r *ParseRequest) DoWithContext(ctx context.Context) (*protocol.ParseRespon
 	if err != nil {
 		return nil, err
 	} else if resp.Status == protocol.Fatal {
-		return nil, FatalError(resp.Errors)
+		return resp, FatalError(resp.Errors)
 	}
 	return resp, nil
 }
@@ -159,7 +159,7 @@ func (r *NativeParseRequest) DoWithContext(ctx context.Context) (*protocol.Nativ
 	if err != nil {
 		return nil, err
 	} else if resp.Status == protocol.Fatal {
-		return nil, FatalError(resp.Errors)
+		return resp, FatalError(resp.Errors)
 	}
 	return resp, nil
 }
@@ -187,7 +187,7 @@ func (r *VersionRequest) DoWithContext(ctx context.Context) (*protocol.VersionRe
 	if err != nil {
 		return nil, err
 	} else if resp.Status == protocol.Fatal {
-		return nil, FatalError(resp.Errors)
+		return resp, FatalError(resp.Errors)
 	}
 	return resp, nil
 }
@@ -215,7 +215,7 @@ func (r *SupportedLanguagesRequest) DoWithContext(ctx context.Context) (*protoco
 	if err != nil {
 		return nil, err
 	} else if resp.Status == protocol.Fatal {
-		return nil, FatalError(resp.Errors)
+		return resp, FatalError(resp.Errors)
 	}
 	return resp, nil
 }
