@@ -1,10 +1,10 @@
 package bblfsh
 
 import (
-	"bytes"
 	"context"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/bblfsh/sdk.v1/protocol"
 )
@@ -15,15 +15,8 @@ type FatalError []string
 func (e FatalError) Error() string {
 	if n := len(e); n == 0 {
 		return "fatal error"
-	} else if n == 1 {
-		return e[0]
 	}
-	buf := bytes.NewBuffer(nil)
-	for _, s := range e {
-		buf.WriteString(s)
-		buf.WriteRune('\n')
-	}
-	return buf.String()
+	return strings.Join([]string(e), "\n")
 }
 
 // ParseRequest is a parsing request to get the UAST.
