@@ -18,12 +18,15 @@ import (
 
 	flags "github.com/jessevdk/go-flags"
 	bblfsh "gopkg.in/bblfsh/client-go.v2"
+	"gopkg.in/bblfsh/client-go.v2/tools"
+	"gopkg.in/bblfsh/sdk.v1/uast"
 )
 
 func main() {
 	var opts struct {
 		Host     string `short:"h" long:"host" description:"Babelfish endpoint address" default:"35.204.62.43:9432"`
 		Language string `short:"l" long:"language" required:"true" description:"Language"`
+		Query    string `short:"q" long:"query" description:"XPath query applied to the resulting UAST"`
 	}
 	args, err := flags.Parse(&opts)
 	if err != nil {
@@ -51,7 +54,15 @@ func main() {
 		fatalf("couldn't parse %s: %v", args[0], err)
 	}
 
-	b, err := json.MarshalIndent(res.UAST, "", "  ")
+	nodes := []*uast.Node{res.UAST}
+	if opts.Query != "" {
+		nodes, err = tools.Filter(res.UAST, opts.Query)
+		if err != nil {
+			fatalf("couldn't apply query %q: %v", opts.Query, err)
+		}
+	}
+
+	b, err := json.MarshalIndent(nodes, "", "  ")
 	if err != nil {
 		fatalf("couldn't encode UAST: %v", err)
 	}
