@@ -24,7 +24,7 @@ import (
 
 func main() {
 	var opts struct {
-		Host     string `short:"h" long:"host" description:"Babelfish endpoint address" default:"35.204.62.43:9432"`
+		Host     string `short:"h" long:"host" description:"Babelfish endpoint address" default:"localhost:9432"`
 		Language string `short:"l" long:"language" required:"true" description:"Language"`
 		Query    string `short:"q" long:"query" description:"XPath query applied to the resulting UAST"`
 	}
