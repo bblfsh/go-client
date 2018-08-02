@@ -24,9 +24,10 @@ import (
 
 func main() {
 	var opts struct {
-		Host     string `short:"h" long:"host" description:"Babelfish endpoint address" default:"localhost:9432"`
-		Language string `short:"l" long:"language" required:"true" description:"Language"`
+		Host     string `short:"a" long:"host" description:"Babelfish endpoint address" default:"localhost:9432"`
+		Language string `short:"l" long:"language" description:"language to parse (default: auto)"`
 		Query    string `short:"q" long:"query" description:"XPath query applied to the resulting UAST"`
+		V2       bool   `long:"v2" description:"return UAST in v2 format"`
 	}
 	args, err := flags.Parse(&opts)
 	if err != nil {
@@ -38,6 +39,8 @@ func main() {
 		fatalf("missing file to parse")
 	} else if len(args) > 1 {
 		fatalf("couldn't parse more than a file at a time")
+	} else if opts.V2 && opts.Query != "" {
+		fatalf("queries are not supported for v2 yet")
 	}
 
 	client, err := bblfsh.NewClient(opts.Host)
@@ -45,24 +48,38 @@ func main() {
 		fatalf("couldn't create client: %v", err)
 	}
 
-	res, err := client.NewParseRequest().
-		Language(opts.Language).
-		Filename(filename).
-		ReadFile(filename).
-		Do()
-	if err != nil {
-		fatalf("couldn't parse %s: %v", args[0], err)
-	}
-
-	nodes := []*uast.Node{res.UAST}
-	if opts.Query != "" {
-		nodes, err = tools.Filter(res.UAST, opts.Query)
+	var ast interface{}
+	if opts.V2 {
+		nodes, _, err := client.NewParseRequestV2().
+			Language(opts.Language).
+			Filename(filename).
+			ReadFile(filename).
+			UAST()
 		if err != nil {
-			fatalf("couldn't apply query %q: %v", opts.Query, err)
+			fatalf("couldn't parse %s: %v", args[0], err)
 		}
+		ast = nodes
+	} else {
+		res, err := client.NewParseRequest().
+			Language(opts.Language).
+			Filename(filename).
+			ReadFile(filename).
+			Do()
+		if err != nil {
+			fatalf("couldn't parse %s: %v", args[0], err)
+		}
+
+		nodes := []*uast.Node{res.UAST}
+		if opts.Query != "" {
+			nodes, err = tools.Filter(res.UAST, opts.Query)
+			if err != nil {
+				fatalf("couldn't apply query %q: %v", opts.Query, err)
+			}
+		}
+		ast = nodes
 	}
 
-	b, err := json.MarshalIndent(nodes, "", "  ")
+	b, err := json.MarshalIndent(ast, "", "  ")
 	if err != nil {
 		fatalf("couldn't encode UAST: %v", err)
 	}
