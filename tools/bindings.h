@@ -119,8 +119,6 @@ static uint32_t EndCol(const void *node) {
   return goGetEndCol((uintptr_t)node);
 }
 
-static Nodes *nodes;
-
 static Uast* CreateUast() {
   return UastNew((NodeIface){
       .InternalType = InternalType,
@@ -147,9 +145,8 @@ static Uast* CreateUast() {
   });
 }
 
-static bool Filter(Uast* ctx, uintptr_t node_ptr, const char *query) {
-  nodes = UastFilter(ctx, (void*)node_ptr, query);
-  return nodes != NULL;
+static Nodes* Filter(Uast* ctx, uintptr_t node_ptr, const char *query) {
+  return UastFilter(ctx, (void*)node_ptr, query);
 }
 
 static int FilterBool(Uast* ctx, uintptr_t node_ptr, const char *query) {
@@ -190,14 +187,6 @@ static void IteratorFree(uintptr_t iter) {
 
 static char *Error() {
   return LastError();
-}
-
-static int Size() {
-  return NodesSize(nodes);
-}
-
-static uintptr_t At(int i) {
-  return (uintptr_t)NodeAt(nodes, i);
 }
 
 #endif // CLIENT_GO_BINDINGS_H_
