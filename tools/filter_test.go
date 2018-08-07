@@ -142,7 +142,7 @@ func TestFilter_NoStartPosition(t *testing.T) {
 
 func TestFilter_StartPosition(t *testing.T) {
 	n := &uast.Node{
-		StartPosition: &uast.Position{0, 1, 1},
+		StartPosition: &uast.Position{Offset: 0, Line: 1, Col: 1},
 	}
 
 	r, err := Filter(n, "//*[@startOffset='0']")
@@ -176,7 +176,7 @@ func TestFilter_NoEndPosition(t *testing.T) {
 
 func TestFilter_EndPosition(t *testing.T) {
 	n := &uast.Node{
-		EndPosition: &uast.Position{0, 1, 1},
+		EndPosition: &uast.Position{Offset: 0, Line: 1, Col: 1},
 	}
 
 	r, err := Filter(n, "//*[@endOffset='0']")
