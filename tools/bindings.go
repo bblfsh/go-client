@@ -152,14 +152,17 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	cquery, ptr, closer := initFilter(node, xpath)
 	defer closer()
 
-	if !C.Filter(uastCtx, ptr, cquery) {
+	nodes := C.Filter(uastCtx, ptr, cquery)
+	if nodes == nil {
 		return nil, cError("UastFilter")
 	}
+	defer C.NodesFree(nodes)
 
-	nu := int(C.Size())
+	nu := int(C.NodesSize(nodes))
 	results := make([]*uast.Node, nu)
 	for i := 0; i < nu; i++ {
-		results[i] = ptrToNode(C.At(C.int(i)))
+		nd := C.uintptr_t(uintptr(C.NodeAt(nodes, C.int(i))))
+		results[i] = ptrToNode(nd)
 	}
 	return results, nil
 }
