@@ -97,7 +97,7 @@ const (
 // Iterator allows for traversal over a UAST tree.
 type Iterator struct {
 	root     *uast.Node
-	iterPtr  C.uintptr_t
+	iterPtr  *C.UastIterator
 	finished bool
 }
 
@@ -118,12 +118,11 @@ func ptrToNode(ptr C.uintptr_t) *uast.Node {
 // initFilter converts the query string and node pointer to C types. It acquires findMutex
 // and initializes the string pool. The caller should defer returned function to release
 // the resources.
-func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t, func()) {
+func initFilter(xpath string) (*C.char, func()) {
 	findMutex.Lock()
 	cquery := spool.getCstring(xpath)
-	ptr := nodeToPtr(node)
 
-	return cquery, ptr, func() {
+	return cquery, func() {
 		spool.release()
 		kpool = make(map[*uast.Node][]string)
 		findMutex.Unlock()
@@ -131,7 +130,7 @@ func initFilter(node *uast.Node, xpath string) (*C.char, C.uintptr_t, func()) {
 }
 
 func cError(name string) error {
-	e := C.Error()
+	e := C.LastError()
 	msg := strings.TrimSpace(C.GoString(e))
 	C.free(unsafe.Pointer(e))
 	// TODO: find a way to access this error code or constant
@@ -149,10 +148,10 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 		return nil, nil
 	}
 
-	cquery, ptr, closer := initFilter(node, xpath)
+	cquery, closer := initFilter(xpath)
 	defer closer()
 
-	nodes := C.Filter(uastCtx, ptr, cquery)
+	nodes := C.UastFilter(uastCtx, unsafe.Pointer(node), cquery)
 	if nodes == nil {
 		return nil, cError("UastFilter")
 	}
@@ -175,24 +174,15 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 		return false, nil
 	}
 
-	cquery, ptr, closer := initFilter(node, xpath)
+	cquery, closer := initFilter(xpath)
 	defer closer()
 
-	res := C.FilterBool(uastCtx, ptr, cquery)
-	if res < 0 {
+	var ok C.bool
+	res := C.UastFilterBool(uastCtx, unsafe.Pointer(node), cquery, &ok)
+	if !bool(ok) {
 		return false, cError("UastFilterBool")
 	}
-
-	var gores bool
-	if res == 0 {
-		gores = false
-	} else if res == 1 {
-		gores = true
-	} else {
-		panic("Implementation error on FilterBool")
-	}
-
-	return gores, nil
+	return bool(res), nil
 }
 
 // FilterNumber takes a `*uast.Node` and a xpath query with a float
@@ -203,15 +193,14 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 		return 0, nil
 	}
 
-	cquery, ptr, closer := initFilter(node, xpath)
+	cquery, closer := initFilter(xpath)
 	defer closer()
 
-	var ok C.int
-	res := C.FilterNumber(uastCtx, ptr, cquery, &ok)
-	if ok == 0 {
-		return 0.0, cError("UastFilterNumber")
+	var ok C.bool
+	res := C.UastFilterNumber(uastCtx, unsafe.Pointer(node), cquery, &ok)
+	if !bool(ok) {
+		return 0, cError("UastFilterNumber")
 	}
-
 	return float64(res), nil
 }
 
@@ -223,15 +212,14 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 		return "", nil
 	}
 
-	cquery, ptr, closer := initFilter(node, xpath)
+	cquery, closer := initFilter(xpath)
 	defer closer()
 
 	var res *C.char
-	res = C.FilterString(uastCtx, ptr, cquery)
+	res = C.UastFilterString(uastCtx, unsafe.Pointer(node), cquery)
 	if res == nil {
 		return "", cError("UastFilterString")
 	}
-
 	return C.GoString(res), nil
 }
 
@@ -392,9 +380,8 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	itMutex.Lock()
 	defer itMutex.Unlock()
 
-	ptr := nodeToPtr(node)
-	it := C.IteratorNew(uastCtx, ptr, C.int(order))
-	if it == 0 {
+	it := C.UastIteratorNew(uastCtx, unsafe.Pointer(node), C.TreeOrder(int(order)))
+	if it == nil {
 		return nil, cError("UastIteratorNew")
 	}
 
@@ -416,13 +403,13 @@ func (i *Iterator) Next() (*uast.Node, error) {
 		return nil, fmt.Errorf("Next() called on finished iterator")
 	}
 
-	pnode := C.IteratorNext(i.iterPtr)
-	if pnode == 0 {
+	pnode := C.UastIteratorNext(i.iterPtr)
+	if pnode == nil {
 		// End of the iteration
 		i.finished = true
 		return nil, nil
 	}
-	return ptrToNode(pnode), nil
+	return (*uast.Node)(pnode), nil
 }
 
 // Iterate function is similar to Next() but returns the `Node`s in a channel. It's mean
@@ -456,9 +443,9 @@ func (i *Iterator) Dispose() {
 	itMutex.Lock()
 	defer itMutex.Unlock()
 
-	if i.iterPtr != 0 {
-		C.IteratorFree(i.iterPtr)
-		i.iterPtr = 0
+	if i.iterPtr != nil {
+		C.UastIteratorFree(i.iterPtr)
+		i.iterPtr = nil
 	}
 	i.finished = true
 	i.root = nil
