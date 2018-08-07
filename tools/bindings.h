@@ -119,11 +119,10 @@ static uint32_t EndCol(const void *node) {
   return goGetEndCol((uintptr_t)node);
 }
 
-static Uast *ctx;
 static Nodes *nodes;
 
-static void CreateUast() {
-  ctx = UastNew((NodeIface){
+static Uast* CreateUast() {
+  return UastNew((NodeIface){
       .InternalType = InternalType,
       .Token = Token,
       .ChildrenSize = ChildrenSize,
@@ -148,12 +147,12 @@ static void CreateUast() {
   });
 }
 
-static bool Filter(uintptr_t node_ptr, const char *query) {
+static bool Filter(Uast* ctx, uintptr_t node_ptr, const char *query) {
   nodes = UastFilter(ctx, (void*)node_ptr, query);
   return nodes != NULL;
 }
 
-static int FilterBool(uintptr_t node_ptr, const char *query) {
+static int FilterBool(Uast* ctx, uintptr_t node_ptr, const char *query) {
   bool ok;
   bool res = UastFilterBool(ctx, (void*)node_ptr, query, &ok);
   if (!ok) {
@@ -162,7 +161,7 @@ static int FilterBool(uintptr_t node_ptr, const char *query) {
   return (int)res;
 }
 
-static double FilterNumber(uintptr_t node_ptr, const char *query, int *ok) {
+static double FilterNumber(Uast* ctx, uintptr_t node_ptr, const char *query, int *ok) {
   bool c_ok;
   double res = UastFilterNumber(ctx, (void*)node_ptr, query, &c_ok);
   if (!c_ok) {
@@ -173,11 +172,11 @@ static double FilterNumber(uintptr_t node_ptr, const char *query, int *ok) {
   return res;
 }
 
-static const char *FilterString(uintptr_t node_ptr, const char *query) {
+static const char *FilterString(Uast* ctx, uintptr_t node_ptr, const char *query) {
   return UastFilterString(ctx, (void*)node_ptr, query);
 }
 
-static uintptr_t IteratorNew(uintptr_t node_ptr, int order) {
+static uintptr_t IteratorNew(Uast* ctx, uintptr_t node_ptr, int order) {
   return (uintptr_t)UastIteratorNew(ctx, (void *)node_ptr, order);
 }
 
