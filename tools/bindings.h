@@ -13,110 +13,110 @@
 #include "libuast/uast.h"
 #endif
 
-extern char* goGetInternalType(uintptr_t);
-extern char* goGetToken(uintptr_t);
-extern int goGetChildrenSize(uintptr_t);
-extern uintptr_t goGetChild(uintptr_t, int);
-extern int goGetRolesSize(uintptr_t);
-extern uint16_t goGetRole(uintptr_t, int);
-extern int goGetPropertiesSize(uintptr_t);
-extern char* goGetPropertyKey(uintptr_t, int);
-extern char* goGetPropertyValue(uintptr_t, int);
-extern bool goHasStartOffset(uintptr_t);
-extern uint32_t goGetStartOffset(uintptr_t);
-extern bool goHasStartLine(uintptr_t);
-extern uint32_t goGetStartLine(uintptr_t);
-extern bool goHasStartCol(uintptr_t);
-extern uint32_t goGetStartCol(uintptr_t);
-extern bool goHasEndOffset(uintptr_t);
-extern uint32_t goGetEndOffset(uintptr_t);
-extern bool goHasEndLine(uintptr_t);
-extern uint32_t goGetEndLine(uintptr_t);
-extern bool goHasEndCol(uintptr_t);
-extern uint32_t goGetEndCol(uintptr_t);
+extern char* goGetInternalType(void*);
+extern char* goGetToken(void*);
+extern int goGetChildrenSize(void*);
+extern void* goGetChild(void*, int);
+extern int goGetRolesSize(void*);
+extern uint16_t goGetRole(void*, int);
+extern int goGetPropertiesSize(void*);
+extern char* goGetPropertyKey(void*, int);
+extern char* goGetPropertyValue(void*, int);
+extern bool goHasStartOffset(void*);
+extern uint32_t goGetStartOffset(void*);
+extern bool goHasStartLine(void*);
+extern uint32_t goGetStartLine(void*);
+extern bool goHasStartCol(void*);
+extern uint32_t goGetStartCol(void*);
+extern bool goHasEndOffset(void*);
+extern uint32_t goGetEndOffset(void*);
+extern bool goHasEndLine(void*);
+extern uint32_t goGetEndLine(void*);
+extern bool goHasEndCol(void*);
+extern uint32_t goGetEndCol(void*);
 
 static const char *InternalType(const void *node) {
-  return goGetInternalType((uintptr_t)node);
+  return goGetInternalType((void*)node);
 }
 
 static const char *Token(const void *node) {
-  return goGetToken((uintptr_t)node);
+  return goGetToken((void*)node);
 }
 
 static size_t ChildrenSize(const void *node) {
-  return goGetChildrenSize((uintptr_t)node);
+  return goGetChildrenSize((void*)node);
 }
 
 static void *ChildAt(const void *data, int index) {
-  return (void*)goGetChild((uintptr_t)data, index);
+  return (void*)goGetChild((void*)data, index);
 }
 
 static size_t RolesSize(const void *node) {
-  return goGetRolesSize((uintptr_t)node);
+  return goGetRolesSize((void*)node);
 }
 
 static uint16_t RoleAt(const void *node, int index) {
-  return goGetRole((uintptr_t)node, index);
+  return goGetRole((void*)node, index);
 }
 
 static size_t PropertiesSize(const void *node) {
-  return goGetPropertiesSize((uintptr_t)node);
+  return goGetPropertiesSize((void*)node);
 }
 
 static const char *PropertyKeyAt(const void *node, int index) {
-  return goGetPropertyKey((uintptr_t)node, index);
+  return goGetPropertyKey((void*)node, index);
 }
 
 static const char *PropertyValueAt(const void *node, int index) {
-  return goGetPropertyValue((uintptr_t)node, index);
+  return goGetPropertyValue((void*)node, index);
 }
 
 static bool HasStartOffset(const void *node) {
-  return goHasStartOffset((uintptr_t)node);
+  return goHasStartOffset((void*)node);
 }
 
 static uint32_t StartOffset(const void *node) {
-  return goGetStartOffset((uintptr_t)node);
+  return goGetStartOffset((void*)node);
 }
 
 static bool HasStartLine(const void *node) {
-  return goHasStartLine((uintptr_t)node);
+  return goHasStartLine((void*)node);
 }
 
 static uint32_t StartLine(const void *node) {
-  return goGetStartLine((uintptr_t)node);
+  return goGetStartLine((void*)node);
 }
 
 static bool HasStartCol(const void *node) {
-  return goHasStartCol((uintptr_t)node);
+  return goHasStartCol((void*)node);
 }
 
 static uint32_t StartCol(const void *node) {
-  return goGetStartCol((uintptr_t)node);
+  return goGetStartCol((void*)node);
 }
 
 static bool HasEndOffset(const void *node) {
-  return goHasEndOffset((uintptr_t)node);
+  return goHasEndOffset((void*)node);
 }
 
 static uint32_t EndOffset(const void *node) {
-  return goGetEndOffset((uintptr_t)node);
+  return goGetEndOffset((void*)node);
 }
 
 static bool HasEndLine(const void *node) {
-  return goHasEndLine((uintptr_t)node);
+  return goHasEndLine((void*)node);
 }
 
 static uint32_t EndLine(const void *node) {
-  return goGetEndLine((uintptr_t)node);
+  return goGetEndLine((void*)node);
 }
 
 static bool HasEndCol(const void *node) {
-  return goHasEndCol((uintptr_t)node);
+  return goHasEndCol((void*)node);
 }
 
 static uint32_t EndCol(const void *node) {
-  return goGetEndCol((uintptr_t)node);
+  return goGetEndCol((void*)node);
 }
 
 static Uast* CreateUast() {
