@@ -101,8 +101,10 @@ type Iterator struct {
 	finished bool
 }
 
+var uastCtx *C.Uast
+
 func init() {
-	C.CreateUast()
+	uastCtx = C.CreateUast()
 }
 
 func nodeToPtr(node *uast.Node) C.uintptr_t {
@@ -150,7 +152,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	cquery, ptr, closer := initFilter(node, xpath)
 	defer closer()
 
-	if !C.Filter(ptr, cquery) {
+	if !C.Filter(uastCtx, ptr, cquery) {
 		return nil, cError("UastFilter")
 	}
 
@@ -173,7 +175,7 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 	cquery, ptr, closer := initFilter(node, xpath)
 	defer closer()
 
-	res := C.FilterBool(ptr, cquery)
+	res := C.FilterBool(uastCtx, ptr, cquery)
 	if res < 0 {
 		return false, cError("UastFilterBool")
 	}
@@ -190,7 +192,7 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 	return gores, nil
 }
 
-// FilterBool takes a `*uast.Node` and a xpath query with a float
+// FilterNumber takes a `*uast.Node` and a xpath query with a float
 // return type (e.g. when using XPath functions returning a float type).
 // FilterNumber is thread-safe but not concurrent by an internal global lock.
 func FilterNumber(node *uast.Node, xpath string) (float64, error) {
@@ -202,7 +204,7 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 	defer closer()
 
 	var ok C.int
-	res := C.FilterNumber(ptr, cquery, &ok)
+	res := C.FilterNumber(uastCtx, ptr, cquery, &ok)
 	if ok == 0 {
 		return 0.0, cError("UastFilterNumber")
 	}
@@ -222,7 +224,7 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 	defer closer()
 
 	var res *C.char
-	res = C.FilterString(ptr, cquery)
+	res = C.FilterString(uastCtx, ptr, cquery)
 	if res == nil {
 		return "", cError("UastFilterString")
 	}
@@ -388,7 +390,7 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	defer itMutex.Unlock()
 
 	ptr := nodeToPtr(node)
-	it := C.IteratorNew(ptr, C.int(order))
+	it := C.IteratorNew(uastCtx, ptr, C.int(order))
 	if it == 0 {
 		return nil, cError("UastIteratorNew")
 	}
