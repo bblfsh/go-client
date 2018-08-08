@@ -112,6 +112,9 @@ func init() {
 	uastCtx = C.CreateUast()
 }
 
+func nodeToHandleC(node *uast.Node) C.NodeHandle {
+	return C.NodeHandle(nodeToHandle(node))
+}
 func nodeToHandle(node *uast.Node) handle {
 	if node == nil {
 		return 0
@@ -122,6 +125,9 @@ func nodeToHandle(node *uast.Node) handle {
 	return h
 }
 
+func handleToNodeC(h C.NodeHandle) *uast.Node {
+	return handleToNode(handle(h))
+}
 func handleToNode(h handle) *uast.Node {
 	if h == 0 {
 		return nil
@@ -170,8 +176,7 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	cquery, closer := initFilter(xpath)
 	defer closer()
 
-	root := nodeToHandle(node)
-	nodes := C.UastFilter(uastCtx, unsafe.Pointer(root), cquery)
+	nodes := C.UastFilter(uastCtx, nodeToHandleC(node), cquery)
 	if nodes == nil {
 		return nil, cError("UastFilter")
 	}
@@ -180,8 +185,8 @@ func Filter(node *uast.Node, xpath string) ([]*uast.Node, error) {
 	nu := int(C.NodesSize(nodes))
 	results := make([]*uast.Node, nu)
 	for i := 0; i < nu; i++ {
-		h := handle(C.NodeAt(nodes, C.int(i)))
-		results[i] = handleToNode(h)
+		h := C.NodeAt(nodes, C.int(i))
+		results[i] = handleToNodeC(h)
 	}
 	return results, nil
 }
@@ -198,8 +203,7 @@ func FilterBool(node *uast.Node, xpath string) (bool, error) {
 	defer closer()
 
 	var ok C.bool
-	root := nodeToHandle(node)
-	res := C.UastFilterBool(uastCtx, unsafe.Pointer(root), cquery, &ok)
+	res := C.UastFilterBool(uastCtx, nodeToHandleC(node), cquery, &ok)
 	if !bool(ok) {
 		return false, cError("UastFilterBool")
 	}
@@ -218,8 +222,7 @@ func FilterNumber(node *uast.Node, xpath string) (float64, error) {
 	defer closer()
 
 	var ok C.bool
-	root := nodeToHandle(node)
-	res := C.UastFilterNumber(uastCtx, unsafe.Pointer(root), cquery, &ok)
+	res := C.UastFilterNumber(uastCtx, nodeToHandleC(node), cquery, &ok)
 	if !bool(ok) {
 		return 0, cError("UastFilterNumber")
 	}
@@ -238,8 +241,7 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 	defer closer()
 
 	var res *C.char
-	root := nodeToHandle(node)
-	res = C.UastFilterString(uastCtx, unsafe.Pointer(root), cquery)
+	res = C.UastFilterString(uastCtx, nodeToHandleC(node), cquery)
 	if res == nil {
 		return "", cError("UastFilterString")
 	}
@@ -247,8 +249,8 @@ func FilterString(node *uast.Node, xpath string) (string, error) {
 }
 
 //export goGetInternalType
-func goGetInternalType(ptr unsafe.Pointer) *C.char {
-	n := handleToNode(handle(ptr))
+func goGetInternalType(ctx *C.Uast, ptr C.NodeHandle) *C.char {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return nil
 	}
@@ -256,8 +258,8 @@ func goGetInternalType(ptr unsafe.Pointer) *C.char {
 }
 
 //export goGetToken
-func goGetToken(ptr unsafe.Pointer) *C.char {
-	n := handleToNode(handle(ptr))
+func goGetToken(ctx *C.Uast, ptr C.NodeHandle) *C.char {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return nil
 	}
@@ -265,8 +267,8 @@ func goGetToken(ptr unsafe.Pointer) *C.char {
 }
 
 //export goGetChildrenSize
-func goGetChildrenSize(ptr unsafe.Pointer) C.int {
-	n := handleToNode(handle(ptr))
+func goGetChildrenSize(ctx *C.Uast, ptr C.NodeHandle) C.int {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -274,18 +276,18 @@ func goGetChildrenSize(ptr unsafe.Pointer) C.int {
 }
 
 //export goGetChild
-func goGetChild(ptr unsafe.Pointer, index C.int) unsafe.Pointer {
-	n := handleToNode(handle(ptr))
+func goGetChild(ctx *C.Uast, ptr C.NodeHandle, index C.int) C.NodeHandle {
+	n := handleToNodeC(ptr)
 	if n == nil {
-		return nil
+		return 0
 	}
 	child := n.Children[int(index)]
-	return unsafe.Pointer(nodeToHandle(child))
+	return nodeToHandleC(child)
 }
 
 //export goGetRolesSize
-func goGetRolesSize(ptr unsafe.Pointer) C.int {
-	n := handleToNode(handle(ptr))
+func goGetRolesSize(ctx *C.Uast, ptr C.NodeHandle) C.int {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -293,8 +295,8 @@ func goGetRolesSize(ptr unsafe.Pointer) C.int {
 }
 
 //export goGetRole
-func goGetRole(ptr unsafe.Pointer, index C.int) C.uint16_t {
-	n := handleToNode(handle(ptr))
+func goGetRole(ctx *C.Uast, ptr C.NodeHandle, index C.int) C.uint16_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -303,15 +305,15 @@ func goGetRole(ptr unsafe.Pointer, index C.int) C.uint16_t {
 }
 
 //export goGetPropertiesSize
-func goGetPropertiesSize(ptr unsafe.Pointer) C.int {
-	n := handleToNode(handle(ptr))
+func goGetPropertiesSize(ctx *C.Uast, ptr C.NodeHandle) C.int {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
 	return C.int(len(n.Properties))
 }
 
-func getPropertyKeys(node *uast.Node) []string {
+func getPropertyKeys(ctx *C.Uast, node *uast.Node) []string {
 	if keys, ok := kpool[node]; ok {
 		return keys
 	}
@@ -326,29 +328,29 @@ func getPropertyKeys(node *uast.Node) []string {
 }
 
 //export goGetPropertyKey
-func goGetPropertyKey(ptr unsafe.Pointer, index C.int) *C.char {
-	n := handleToNode(handle(ptr))
+func goGetPropertyKey(ctx *C.Uast, ptr C.NodeHandle, index C.int) *C.char {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return nil
 	}
-	keys := getPropertyKeys(n)
+	keys := getPropertyKeys(ctx, n)
 	return spool.getCstring(keys[int(index)])
 }
 
 //export goGetPropertyValue
-func goGetPropertyValue(ptr unsafe.Pointer, index C.int) *C.char {
-	n := handleToNode(handle(ptr))
+func goGetPropertyValue(ctx *C.Uast, ptr C.NodeHandle, index C.int) *C.char {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return nil
 	}
-	keys := getPropertyKeys(n)
+	keys := getPropertyKeys(ctx, n)
 	p := n.Properties
 	return spool.getCstring(p[keys[int(index)]])
 }
 
 //export goHasStartOffset
-func goHasStartOffset(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasStartOffset(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -356,8 +358,8 @@ func goHasStartOffset(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetStartOffset
-func goGetStartOffset(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetStartOffset(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -369,8 +371,8 @@ func goGetStartOffset(ptr unsafe.Pointer) C.uint32_t {
 }
 
 //export goHasStartLine
-func goHasStartLine(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasStartLine(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -378,8 +380,8 @@ func goHasStartLine(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetStartLine
-func goGetStartLine(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetStartLine(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -391,8 +393,8 @@ func goGetStartLine(ptr unsafe.Pointer) C.uint32_t {
 }
 
 //export goHasStartCol
-func goHasStartCol(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasStartCol(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -400,8 +402,8 @@ func goHasStartCol(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetStartCol
-func goGetStartCol(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetStartCol(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -413,8 +415,8 @@ func goGetStartCol(ptr unsafe.Pointer) C.uint32_t {
 }
 
 //export goHasEndOffset
-func goHasEndOffset(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasEndOffset(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -422,8 +424,8 @@ func goHasEndOffset(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetEndOffset
-func goGetEndOffset(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetEndOffset(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -435,8 +437,8 @@ func goGetEndOffset(ptr unsafe.Pointer) C.uint32_t {
 }
 
 //export goHasEndLine
-func goHasEndLine(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasEndLine(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -444,8 +446,8 @@ func goHasEndLine(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetEndLine
-func goGetEndLine(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetEndLine(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -457,8 +459,8 @@ func goGetEndLine(ptr unsafe.Pointer) C.uint32_t {
 }
 
 //export goHasEndCol
-func goHasEndCol(ptr unsafe.Pointer) C.bool {
-	n := handleToNode(handle(ptr))
+func goHasEndCol(ctx *C.Uast, ptr C.NodeHandle) C.bool {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return false
 	}
@@ -466,8 +468,8 @@ func goHasEndCol(ptr unsafe.Pointer) C.bool {
 }
 
 //export goGetEndCol
-func goGetEndCol(ptr unsafe.Pointer) C.uint32_t {
-	n := handleToNode(handle(ptr))
+func goGetEndCol(ctx *C.Uast, ptr C.NodeHandle) C.uint32_t {
+	n := handleToNodeC(ptr)
 	if n == nil {
 		return 0
 	}
@@ -486,8 +488,7 @@ func NewIterator(node *uast.Node, order TreeOrder) (*Iterator, error) {
 	itMutex.Lock()
 	defer itMutex.Unlock()
 
-	root := nodeToHandle(node)
-	it := C.UastIteratorNew(uastCtx, unsafe.Pointer(root), C.TreeOrder(int(order)))
+	it := C.UastIteratorNew(uastCtx, nodeToHandleC(node), C.TreeOrder(int(order)))
 	if it == nil {
 		return nil, cError("UastIteratorNew")
 	}
