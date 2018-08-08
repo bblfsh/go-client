@@ -13,110 +13,110 @@
 #include "libuast/uast.h"
 #endif
 
-extern char* goGetInternalType(void*);
-extern char* goGetToken(void*);
-extern int goGetChildrenSize(void*);
-extern void* goGetChild(void*, int);
-extern int goGetRolesSize(void*);
-extern uint16_t goGetRole(void*, int);
-extern int goGetPropertiesSize(void*);
-extern char* goGetPropertyKey(void*, int);
-extern char* goGetPropertyValue(void*, int);
-extern bool goHasStartOffset(void*);
-extern uint32_t goGetStartOffset(void*);
-extern bool goHasStartLine(void*);
-extern uint32_t goGetStartLine(void*);
-extern bool goHasStartCol(void*);
-extern uint32_t goGetStartCol(void*);
-extern bool goHasEndOffset(void*);
-extern uint32_t goGetEndOffset(void*);
-extern bool goHasEndLine(void*);
-extern uint32_t goGetEndLine(void*);
-extern bool goHasEndCol(void*);
-extern uint32_t goGetEndCol(void*);
+extern char* goGetInternalType(Uast*, NodeHandle);
+extern char* goGetToken(Uast*, NodeHandle);
+extern int goGetChildrenSize(Uast*, NodeHandle);
+extern NodeHandle goGetChild(Uast*, NodeHandle, int);
+extern int goGetRolesSize(Uast*, NodeHandle);
+extern uint16_t goGetRole(Uast*, NodeHandle, int);
+extern int goGetPropertiesSize(Uast*, NodeHandle);
+extern char* goGetPropertyKey(Uast*, NodeHandle, int);
+extern char* goGetPropertyValue(Uast*, NodeHandle, int);
+extern bool goHasStartOffset(Uast*, NodeHandle);
+extern uint32_t goGetStartOffset(Uast*, NodeHandle);
+extern bool goHasStartLine(Uast*, NodeHandle);
+extern uint32_t goGetStartLine(Uast*, NodeHandle);
+extern bool goHasStartCol(Uast*, NodeHandle);
+extern uint32_t goGetStartCol(Uast*, NodeHandle);
+extern bool goHasEndOffset(Uast*, NodeHandle);
+extern uint32_t goGetEndOffset(Uast*, NodeHandle);
+extern bool goHasEndLine(Uast*, NodeHandle);
+extern uint32_t goGetEndLine(Uast*, NodeHandle);
+extern bool goHasEndCol(Uast*, NodeHandle);
+extern uint32_t goGetEndCol(Uast*, NodeHandle);
 
-static const char *InternalType(const void *node) {
-  return goGetInternalType((void*)node);
+static const char *InternalType(const Uast* ctx, NodeHandle node) {
+  return goGetInternalType((Uast*)ctx, node);
 }
 
-static const char *Token(const void *node) {
-  return goGetToken((void*)node);
+static const char *Token(const Uast* ctx, NodeHandle node) {
+  return goGetToken((Uast*)ctx, node);
 }
 
-static size_t ChildrenSize(const void *node) {
-  return goGetChildrenSize((void*)node);
+static size_t ChildrenSize(const Uast* ctx, NodeHandle node) {
+  return goGetChildrenSize((Uast*)ctx, node);
 }
 
-static void *ChildAt(const void *data, int index) {
-  return (void*)goGetChild((void*)data, index);
+static NodeHandle ChildAt(const Uast* ctx, NodeHandle data, int index) {
+  return goGetChild((Uast*)ctx, data, index);
 }
 
-static size_t RolesSize(const void *node) {
-  return goGetRolesSize((void*)node);
+static size_t RolesSize(const Uast* ctx, NodeHandle node) {
+  return goGetRolesSize((Uast*)ctx, node);
 }
 
-static uint16_t RoleAt(const void *node, int index) {
-  return goGetRole((void*)node, index);
+static uint16_t RoleAt(const Uast* ctx, NodeHandle node, int index) {
+  return goGetRole((Uast*)ctx, node, index);
 }
 
-static size_t PropertiesSize(const void *node) {
-  return goGetPropertiesSize((void*)node);
+static size_t PropertiesSize(const Uast* ctx, NodeHandle node) {
+  return goGetPropertiesSize((Uast*)ctx, node);
 }
 
-static const char *PropertyKeyAt(const void *node, int index) {
-  return goGetPropertyKey((void*)node, index);
+static const char *PropertyKeyAt(const Uast* ctx, NodeHandle node, int index) {
+  return goGetPropertyKey((Uast*)ctx, node, index);
 }
 
-static const char *PropertyValueAt(const void *node, int index) {
-  return goGetPropertyValue((void*)node, index);
+static const char *PropertyValueAt(const Uast* ctx, NodeHandle node, int index) {
+  return goGetPropertyValue((Uast*)ctx, node, index);
 }
 
-static bool HasStartOffset(const void *node) {
-  return goHasStartOffset((void*)node);
+static bool HasStartOffset(const Uast* ctx, NodeHandle node) {
+  return goHasStartOffset((Uast*)ctx, node);
 }
 
-static uint32_t StartOffset(const void *node) {
-  return goGetStartOffset((void*)node);
+static uint32_t StartOffset(const Uast* ctx, NodeHandle node) {
+  return goGetStartOffset((Uast*)ctx, node);
 }
 
-static bool HasStartLine(const void *node) {
-  return goHasStartLine((void*)node);
+static bool HasStartLine(const Uast* ctx, NodeHandle node) {
+  return goHasStartLine((Uast*)ctx, node);
 }
 
-static uint32_t StartLine(const void *node) {
-  return goGetStartLine((void*)node);
+static uint32_t StartLine(const Uast* ctx, NodeHandle node) {
+  return goGetStartLine((Uast*)ctx, node);
 }
 
-static bool HasStartCol(const void *node) {
-  return goHasStartCol((void*)node);
+static bool HasStartCol(const Uast* ctx, NodeHandle node) {
+  return goHasStartCol((Uast*)ctx, node);
 }
 
-static uint32_t StartCol(const void *node) {
-  return goGetStartCol((void*)node);
+static uint32_t StartCol(const Uast* ctx, NodeHandle node) {
+  return goGetStartCol((Uast*)ctx, node);
 }
 
-static bool HasEndOffset(const void *node) {
-  return goHasEndOffset((void*)node);
+static bool HasEndOffset(const Uast* ctx, NodeHandle node) {
+  return goHasEndOffset((Uast*)ctx, node);
 }
 
-static uint32_t EndOffset(const void *node) {
-  return goGetEndOffset((void*)node);
+static uint32_t EndOffset(const Uast* ctx, NodeHandle node) {
+  return goGetEndOffset((Uast*)ctx, node);
 }
 
-static bool HasEndLine(const void *node) {
-  return goHasEndLine((void*)node);
+static bool HasEndLine(const Uast* ctx, NodeHandle node) {
+  return goHasEndLine((Uast*)ctx, node);
 }
 
-static uint32_t EndLine(const void *node) {
-  return goGetEndLine((void*)node);
+static uint32_t EndLine(const Uast* ctx, NodeHandle node) {
+  return goGetEndLine((Uast*)ctx, node);
 }
 
-static bool HasEndCol(const void *node) {
-  return goHasEndCol((void*)node);
+static bool HasEndCol(const Uast* ctx, NodeHandle node) {
+  return goHasEndCol((Uast*)ctx, node);
 }
 
-static uint32_t EndCol(const void *node) {
-  return goGetEndCol((void*)node);
+static uint32_t EndCol(const Uast* ctx, NodeHandle node) {
+  return goGetEndCol((Uast*)ctx, node);
 }
 
 static Uast* CreateUast() {
