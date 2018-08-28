@@ -78,6 +78,20 @@ const (
 	Semantic  = protocol2.Mode_Semantic
 )
 
+// Parse mode parses a UAST mode string to an enum value.
+func ParseMode(mode string) (Mode, error) {
+	// TODO: define this function in SDK
+	switch mode {
+	case "native":
+		return Native, nil
+	case "annotated":
+		return Annotated, nil
+	case "semantic":
+		return Semantic, nil
+	}
+	return 0, fmt.Errorf("unsupported mode: %q", mode)
+}
+
 // Mode controls the level of transformation applied to UAST.
 func (r *ParseRequestV2) Mode(mode Mode) *ParseRequestV2 {
 	r.internal.Mode = mode

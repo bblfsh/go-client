@@ -27,6 +27,7 @@ func main() {
 		Host     string `short:"a" long:"host" description:"Babelfish endpoint address" default:"localhost:9432"`
 		Language string `short:"l" long:"language" description:"language to parse (default: auto)"`
 		Query    string `short:"q" long:"query" description:"XPath query applied to the resulting UAST"`
+		Mode     string `short:"m" long:"mode" description:"UAST transformation mode: semantic, annotated, native"`
 		V2       bool   `long:"v2" description:"return UAST in v2 format"`
 	}
 	args, err := flags.Parse(&opts)
@@ -50,21 +51,35 @@ func main() {
 
 	var ast interface{}
 	if opts.V2 {
-		nodes, _, err := client.NewParseRequestV2().
+		req := client.NewParseRequestV2().
 			Language(opts.Language).
 			Filename(filename).
-			ReadFile(filename).
-			UAST()
+			ReadFile(filename)
+		if opts.Mode != "" {
+			m, err := bblfsh.ParseMode(opts.Mode)
+			if err != nil {
+				fatalf("%v", err)
+			}
+			req = req.Mode(m)
+		}
+		nodes, _, err := req.UAST()
 		if err != nil {
 			fatalf("couldn't parse %s: %v", args[0], err)
 		}
 		ast = nodes
 	} else {
-		res, err := client.NewParseRequest().
+		req := client.NewParseRequest().
 			Language(opts.Language).
 			Filename(filename).
-			ReadFile(filename).
-			Do()
+			ReadFile(filename)
+		if opts.Mode != "" {
+			m, err := bblfsh.ParseMode(opts.Mode)
+			if err != nil {
+				fatalf("%v", err)
+			}
+			req = req.Mode(m)
+		}
+		res, err := req.Do()
 		if err != nil {
 			fatalf("couldn't parse %s: %v", args[0], err)
 		}
