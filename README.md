@@ -20,7 +20,7 @@ It is also possible to link against custom `libuast` on Windows, read [WINDOWS.m
 
 This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.
 
-If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/user/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server. 
+If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server. 
 
 Go to the[quick start](https://github.com/bblfsh/bblfshd#quick-start) to discover how to run Babelfish with Docker.
 
