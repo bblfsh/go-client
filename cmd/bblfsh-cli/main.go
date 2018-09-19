@@ -20,6 +20,7 @@ import (
 	bblfsh "gopkg.in/bblfsh/client-go.v2"
 	"gopkg.in/bblfsh/client-go.v2/tools"
 	"gopkg.in/bblfsh/sdk.v1/uast"
+	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
 )
 
 func main() {
@@ -39,8 +40,6 @@ func main() {
 		fatalf("missing file to parse")
 	} else if len(args) > 1 {
 		fatalf("couldn't parse more than a file at a time")
-	} else if opts.V2 && opts.Query != "" {
-		fatalf("queries are not supported for v2 yet")
 	}
 	filename := args[0]
 
@@ -62,11 +61,22 @@ func main() {
 			}
 			req = req.Mode(m)
 		}
-		nodes, _, err := req.UAST()
+		root, _, err := req.UAST()
 		if err != nil {
 			fatalf("couldn't parse %s: %v", args[0], err)
 		}
-		ast = nodes
+		if opts.Query != "" {
+			var arr nodes.Array
+			it, err := tools.FilterXPath(root, opts.Query)
+			if err != nil {
+				fatalf("couldn't apply query %q: %v", opts.Query, err)
+			}
+			for it.Next() {
+				arr = append(arr, it.Node().(nodes.Node))
+			}
+			root = arr
+		}
+		ast = root
 	} else {
 		req := client.NewParseRequest().
 			Language(opts.Language).
