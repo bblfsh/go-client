@@ -47,27 +47,17 @@ func NewClientWithConnection(conn *grpc.ClientConn) (*Client, error) {
 	}, nil
 }
 
-// NewParseRequestV2 is a parsing request to get the UAST.
-func (c *Client) NewParseRequestV2() *ParseRequestV2 {
-	return &ParseRequestV2{client: c}
-}
-
 // NewParseRequest is a parsing request to get the UAST.
 func (c *Client) NewParseRequest() *ParseRequest {
-	return &ParseRequest{client: c}
-}
-
-// NewNativeParseRequest is a parsing request to get the AST.
-func (c *Client) NewNativeParseRequest() *NativeParseRequest {
-	return &NativeParseRequest{client: c}
+	return &ParseRequest{ctx: context.Background(), client: c}
 }
 
 // NewVersionRequest is a parsing request to get the version of the server.
 func (c *Client) NewVersionRequest() *VersionRequest {
-	return &VersionRequest{client: c}
+	return &VersionRequest{ctx: context.Background(), client: c}
 }
 
 // NewSupportedLanguagesRequest is a parsing request to get the supported languages.
 func (c *Client) NewSupportedLanguagesRequest() *SupportedLanguagesRequest {
-	return &SupportedLanguagesRequest{client: c}
+	return &SupportedLanguagesRequest{ctx: context.Background(), client: c}
 }

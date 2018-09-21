@@ -14,10 +14,6 @@
   version = "1.14.x"
 
 [[constraint]]
-  name = "gopkg.in/bblfsh/sdk.v1"
-  version = "1.16.x"
-
-[[constraint]]
   name = "gopkg.in/bblfsh/sdk.v2"
   version = "2.2.x"
 

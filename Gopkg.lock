@@ -172,7 +172,6 @@
     "driver",
     "driver/manifest",
     "protocol",
-    "protocol/v1",
     "uast",
     "uast/nodes",
     "uast/nodes/nodesproto",
@@ -201,6 +200,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "403f83976885d8f2dd873c1db6df963e4a5685e217103ac49dca60d0fbd9d472"
+  inputs-digest = "1421e84bddfeb1f6c0faf1abcef1cca6b393c239ee013935e03b7dd4c58fa3b7"
   solver-name = "gps-cdcl"
   solver-version = 1

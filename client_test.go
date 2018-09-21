@@ -29,7 +29,6 @@ var clientTests = []struct {
 	{name: "ParseRequest", test: testParseRequest},
 	{name: "ParseRequestMode", test: testParseRequestMode},
 	{name: "NativeParseRequest", test: testNativeParseRequest},
-	{name: "ParseRequestV2", test: testParseRequestV2},
 	{name: "VersionRequest", test: testVersionRequest},
 	{name: "SupportedLanguagesRequest", test: testSupportedLanguagesRequest},
 }
@@ -49,7 +48,7 @@ func testParseRequest(t *testing.T, cli *Client) {
 	require.NoError(t, err)
 
 	require.Equal(t, 0, len(res.Errors))
-	require.NotNil(t, res.UAST)
+	require.NotNil(t, res)
 }
 
 func testParseRequestMode(t *testing.T, cli *Client) {
@@ -57,44 +56,32 @@ func testParseRequestMode(t *testing.T, cli *Client) {
 	require.NoError(t, err)
 
 	require.Equal(t, 0, len(res.Errors))
-	require.NotNil(t, res.UAST)
+	require.NotNil(t, res)
 
 	res, err = cli.NewParseRequest().Language("python").Content("import foo").Mode(Annotated).Do()
 	require.NoError(t, err)
 
 	require.Equal(t, 0, len(res.Errors))
-	require.NotNil(t, res.UAST)
-	t.Log(res.UAST)
+	require.NotNil(t, res)
+	t.Log(res)
 }
 
 func testNativeParseRequest(t *testing.T, cli *Client) {
-	res, err := cli.NewNativeParseRequest().Language("python").Content("import foo").Do()
+	res, err := cli.NewParseRequest().Mode(Native).Language("python").Content("import foo").Do()
 	require.NoError(t, err)
 
 	require.Equal(t, 0, len(res.Errors))
-	require.NotNil(t, res.AST)
-}
-
-func testParseRequestV2(t *testing.T, cli *Client) {
-	res, lang, err := cli.NewParseRequestV2().Language("python").Content("import foo").UAST()
-	require.NoError(t, err)
-
-	require.Equal(t, "python", lang)
 	require.NotNil(t, res)
 }
 
 func testVersionRequest(t *testing.T, cli *Client) {
 	res, err := cli.NewVersionRequest().Do()
 	require.NoError(t, err)
-
-	require.Equal(t, 0, len(res.Errors))
 	require.NotNil(t, res.Version)
 }
 
 func testSupportedLanguagesRequest(t *testing.T, cli *Client) {
 	res, err := cli.NewSupportedLanguagesRequest().Do()
 	require.NoError(t, err)
-
-	require.Equal(t, 0, len(res.Errors))
-	require.NotEmpty(t, res.Languages)
+	require.NotEmpty(t, res)
 }
