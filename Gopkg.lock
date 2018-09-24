@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/antchfx/xpath"
   packages = ["."]
-  revision = "c2547b7f965a33cc46f0883f6d8bccda62ecb2c0"
+  revision = "3de91f3991a1af6e495d49c9218318b5544b20e3"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -183,8 +183,8 @@
     "uast/transformer",
     "uast/yaml"
   ]
-  revision = "87d72062a52cbfe5b52a606f98ec53a29ac94e28"
-  version = "v2.2.0"
+  revision = "801385dfdc5c955c410e52c4b02f8622c64a7d85"
+  version = "v2.2.2"
 
 [[projects]]
   name = "gopkg.in/src-d/go-errors.v1"
