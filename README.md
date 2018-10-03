@@ -22,72 +22,104 @@ If you don't have a bblfsh server installed, please read the [getting started](h
 Go to the [quick start](https://github.com/bblfsh/bblfshd#quick-start) to discover how to run Babelfish with Docker.
 
 ```go
-client, err := bblfsh.NewClient("0.0.0.0:9432")
-if err != nil {
-    panic(err)
-}
+package main
 
-python := "import foo"
+import (
+	"fmt"
 
-res, _, err := client.NewParseRequest().Language("python").Content(python).UAST()
-if err != nil {
-    panic(err)
-}
+	bblfsh "gopkg.in/bblfsh/client-go.v3"
+	"gopkg.in/bblfsh/client-go.v3/tools"
+	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
+)
 
-query := "//*[@role='Import']"
-nodes, _ := tools.Filter(res.UAST, query)
-for _, n := range nodes {
-    fmt.Println(n)
+func main() {
+	client, err := bblfsh.NewClient("0.0.0.0:9432")
+	if err != nil {
+		panic(err)
+	}
+
+	python := "import foo"
+
+	req := client.NewParseRequest().Language("python").Content(python)
+	node, _, err := req.UAST()
+	if err != nil {
+		panic(err)
+	}
+
+	it, err := tools.Filter(node, "//*[@role='Import']")
+	if err != nil {
+		panic(err)
+	}
+
+	for it.Next() {
+		nodes.WalkPreOrderExt(it.Node(), func(e nodes.External) bool {
+			switch val := e.(type) {
+			case nodes.Object:
+				fmt.Printf("Object.Kind: %v\tObject.Keys: %v\n", val.Kind(), val.Keys())
+			case nodes.Array:
+				fmt.Printf("Array.Kind: %v\tArray.Values:", val.Kind())
+				for i := 0; i < val.Size(); i++ {
+					fmt.Printf(" %v", val.ValueAt(i))
+				}
+				fmt.Println()
+			case nodes.Value:
+				fmt.Printf("Value.Kind: %v\tValue.Value: %v\n", val.Kind(), val.Value())
+			default:
+				return false
+			}
+
+			return true
+		})
+
+	}
 }
 ```
 
 ```
-Import {
-.  Roles: Import,Declaration,Statement
-.  StartPosition: {
-.  .  Offset: 0
-.  .  Line: 1
-.  .  Col: 1
-.  }
-.  Properties: {
-.  .  internalRole: body
-.  }
-.  Children: {
-.  .  0: alias {
-.  .  .  Roles: Import,Pathname,Identifier
-.  .  .  TOKEN "foo"
-.  .  .  Properties: {
-.  .  .  .  asname: <nil>
-.  .  .  .  internalRole: names
-.  .  .  }
-.  .  }
-.  }
-}
+Object.Kind: Object	Object.Keys: [@pos @role @token @type names]
 
-alias {
-.  Roles: Import,Pathname,Identifier
-.  TOKEN "foo"
-.  Properties: {
-.  .  asname: <nil>
-.  .  internalRole: names
-.  }
-}
+Object.Kind: Object	Object.Keys: [@type start]
 
-iter, err := tools.NewIterator(res.UAST)
-if err != nil {
-    panic(err)
-}
+Value.Kind: String	Value.Value: uast:Positions
 
-for node := range tools.Iterate(iter) {
-    fmt.Println(node)
-}
+Object.Kind: Object	Object.Keys: [@type col line offset]
 
-// For XPath expressions returning a boolean/numeric/string value, you must
-// use the right typed Filter function:
+Value.Kind: String	Value.Value: uast:Position
 
-boolres, err := FilterBool(res.UAST, "boolean(//*[@start-offset or @end-offset])")
-strres, err := FilterString(res.UAST, "name(//*[1])")
-numres, err := FilterNumber(res.UAST, "count(//*)")
+Value.Kind: Uint	Value.Value: 1
+
+Value.Kind: Uint	Value.Value: 1
+
+Value.Kind: Uint	Value.Value: 0
+
+Array.Kind: Array	Array.Values: Import Declaration Statement
+Value.Kind: String	Value.Value: Import
+
+Value.Kind: String	Value.Value: Declaration
+
+Value.Kind: String	Value.Value: Statement
+
+Value.Kind: String	Value.Value: import
+
+Value.Kind: String	Value.Value: Import
+
+Object.Kind: Object	Object.Keys: [@role @type name_list]
+
+Array.Kind: Array	Array.Values: Import Pathname Identifier Incomplete
+Value.Kind: String	Value.Value: Import
+
+Value.Kind: String	Value.Value: Pathname
+
+Value.Kind: String	Value.Value: Identifier
+
+Value.Kind: String	Value.Value: Incomplete
+
+Value.Kind: String	Value.Value: ImportFrom.names
+
+Array.Kind: Array	Array.Values: map[All:false Names:<nil> Path:map[@pos:map[@type:uast:Positions] @type:uast:Alias Name:map[@type:uast:Identifier Name:foo] Node:map[]] Target:<nil> @type:uast:RuntimeImport]
+Object.Kind: Object	Object.Keys: [@type All Names Path Target]
+
+...
 ```
 
 Please read the [Babelfish clients](https://doc.bblf.sh/using-babelfish/clients.html) guide section to learn more about babelfish clients and their query language.
