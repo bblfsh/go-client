@@ -29,13 +29,13 @@ if err != nil {
 
 python := "import foo"
 
-res, _, err := client.NewParseRequest().Language("python").Content(python).UAST()
+uast, _, err := client.NewParseRequest().Language("python").Content(python).UAST()
 if err != nil {
     panic(err)
 }
 
 query := "//*[@role='Import']"
-nodes, _ := tools.Filter(res.UAST, query)
+nodes, _ := tools.Filter(uast, query)
 for _, n := range nodes {
     fmt.Println(n)
 }
