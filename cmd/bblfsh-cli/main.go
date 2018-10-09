@@ -35,7 +35,9 @@ func main() {
 		Out      string `short:"o" long:"out" description:"Output format: yaml, json, bin" default:"yaml"`
 	}
 	args, err := flags.Parse(&opts)
-	if err != nil {
+	if e, ok := err.(*flags.Error); ok && e.Type == flags.ErrHelp {
+		os.Exit(1)
+	} else if err != nil {
 		fatalf("couldn't parse flags: %v", err)
 	}
 
