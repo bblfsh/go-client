@@ -14,7 +14,12 @@ go get -u gopkg.in/bblfsh/client-go.v3/...
 ```
 
 ## Example
+### CLI
 
+Allthough *clinet-go* is a library, it includes an example `bblfsh-cli` binary at [`./cmd/bblfsh-cli`](/cmd/bblfsh-cli). It allows to parse a single file, query it with XPath and print the resulting UAST structure immediatly. 
+See `$ bblfsh-cli -h` for list of all available CLI options.
+
+### Code
 This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.
 
 If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server. 
