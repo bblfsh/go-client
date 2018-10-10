@@ -2,7 +2,6 @@ package bblfsh
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -38,16 +37,11 @@ const (
 
 // Parse mode parses a UAST mode string to an enum value.
 func ParseMode(mode string) (Mode, error) {
-	// TODO: define this function in SDK
-	switch mode {
-	case "native":
-		return Native, nil
-	case "annotated":
-		return Annotated, nil
-	case "semantic":
-		return Semantic, nil
+	m, err := driver.ParseMode(mode)
+	if err != nil {
+		return 0, err
 	}
-	return 0, fmt.Errorf("unsupported mode: %q", mode)
+	return Mode(m), nil
 }
 
 // ParseRequest is a parsing request to get the UAST.

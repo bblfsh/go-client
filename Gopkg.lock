@@ -182,8 +182,8 @@
     "uast/transformer",
     "uast/yaml"
   ]
-  revision = "801385dfdc5c955c410e52c4b02f8622c64a7d85"
-  version = "v2.2.2"
+  revision = "fab3b62f674a6845167c004dcc11f9143209da2a"
+  version = "v2.2.4"
 
 [[projects]]
   name = "gopkg.in/src-d/go-errors.v1"
