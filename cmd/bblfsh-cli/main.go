@@ -65,6 +65,11 @@ func main() {
 		req = req.Mode(m)
 	}
 	ast, _, err := req.UAST()
+	if bblfsh.ErrSyntax.Is(err) {
+		fatalfCode(2, "%v", err)
+	} else if bblfsh.ErrDriverFailure.Is(err) {
+		fatalfCode(3, "%v", err)
+	}
 	if err != nil {
 		fatalf("couldn't parse %s: %v", args[0], err)
 	}
@@ -103,6 +108,13 @@ func main() {
 }
 
 func fatalf(msg string, args ...interface{}) {
+	fatalfCode(1, msg, args...)
+}
+
+func fatalfCode(code int, msg string, args ...interface{}) {
+	if code <= 0 {
+		code = 1
+	}
 	fmt.Fprintf(os.Stderr, msg+"\n", args...)
-	os.Exit(1)
+	os.Exit(code)
 }
