@@ -9,7 +9,6 @@ import (
 	"time"
 
 	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
-	"gopkg.in/bblfsh/sdk.v2/driver"
 	protocol2 "gopkg.in/bblfsh/sdk.v2/protocol"
 	"gopkg.in/bblfsh/sdk.v2/protocol/v1"
 	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
@@ -26,7 +25,13 @@ func (e FatalError) Error() string {
 }
 
 // ErrPartialParse is returned when driver was not able to parse the whole source file.
-type ErrPartialParse = driver.ErrPartialParse
+//
+// Deprecated: this type is unused
+type ErrPartialParse struct{}
+
+func (ErrPartialParse) Error() string {
+	return "partial parse"
+}
 
 // ParseRequestV2 is a parsing request to get the UAST.
 type ParseRequestV2 struct {
