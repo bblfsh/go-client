@@ -119,10 +119,10 @@ func main() {
 		fmt.Printf("%s\n", b)
 	case "proto":
 		if opts.V2 || opts.Query != "" {
-			fatalf(".proto output format is only supported for V1 requests without any queries")
+			fatalf(".pb output format is only supported for V1 requests without any queries")
 		}
 
-		outFileName := fmt.Sprintf("./%s.proto", filepath.Base(filename))
+		outFileName := fmt.Sprintf("./%s.pb", filepath.Base(filename))
 		fmt.Fprintf(os.Stderr, "Saving result to %s\n", outFileName)
 
 		protoUast, err := res.UAST.Marshal()
@@ -134,6 +134,8 @@ func main() {
 		if err != nil {
 			fatalf("failed to write Protobuf to %s, %v", outFileName, err)
 		}
+	default:
+		fatalf("unsupported output format: %q", opts.Out)
 	}
 }
 
