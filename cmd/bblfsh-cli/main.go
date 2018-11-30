@@ -14,11 +14,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	flags "github.com/jessevdk/go-flags"
 	bblfsh "gopkg.in/bblfsh/client-go.v2"
 	"gopkg.in/bblfsh/client-go.v2/tools"
+	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
 	"gopkg.in/bblfsh/sdk.v1/uast"
 	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
 )
@@ -30,6 +33,7 @@ func main() {
 		Query    string `short:"q" long:"query" description:"XPath query applied to the resulting UAST"`
 		Mode     string `short:"m" long:"mode" description:"UAST transformation mode: semantic, annotated, native"`
 		V2       bool   `long:"v2" description:"return UAST in v2 format"`
+		Out      string `short:"o" long:"out" description:"Output format: proto, json" default:"json"`
 	}
 	args, err := flags.Parse(&opts)
 	if err != nil {
@@ -49,6 +53,7 @@ func main() {
 	}
 
 	var ast interface{}
+	var res *protocol1.ParseResponse
 	if opts.V2 {
 		req := client.NewParseRequestV2().
 			Language(opts.Language).
@@ -89,7 +94,7 @@ func main() {
 			}
 			req = req.Mode(m)
 		}
-		res, err := req.Do()
+		res, err = req.Do()
 		if err != nil {
 			fatalf("couldn't parse %s: %v", args[0], err)
 		}
@@ -104,11 +109,32 @@ func main() {
 		ast = nodes
 	}
 
-	b, err := json.MarshalIndent(ast, "", "  ")
-	if err != nil {
-		fatalf("couldn't encode UAST: %v", err)
+	var b []byte
+	switch opts.Out {
+	case "", "json":
+		b, err = json.MarshalIndent(ast, "", "  ")
+		if err != nil {
+			fatalf("couldn't encode UAST: %v", err)
+		}
+		fmt.Printf("%s\n", b)
+	case "proto":
+		if opts.V2 || opts.Query != "" {
+			fatalf(".proto output format is only supported for V1 requests without any queries")
+		}
+
+		outFileName := fmt.Sprintf("./%s.proto", filepath.Base(filename))
+		fmt.Fprintf(os.Stderr, "Saving result to %s\n", outFileName)
+
+		protoUast, err := res.UAST.Marshal()
+		if err != nil {
+			fatalf("failed to encode UAST to Protobuf: %v", err)
+		}
+
+		ioutil.WriteFile(outFileName, []byte(protoUast), 0644)
+		if err != nil {
+			fatalf("failed to write Protobuf to %s, %v", outFileName, err)
+		}
 	}
-	fmt.Printf("%s\n", b)
 }
 
 func fatalf(msg string, args ...interface{}) {
