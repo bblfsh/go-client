@@ -130,7 +130,7 @@ func main() {
 			fatalf("failed to encode UAST to Protobuf: %v", err)
 		}
 
-		ioutil.WriteFile(outFileName, []byte(protoUast), 0644)
+		err = ioutil.WriteFile(outFileName, []byte(protoUast), 0644)
 		if err != nil {
 			fatalf("failed to write Protobuf to %s, %v", outFileName, err)
 		}
