@@ -16,13 +16,12 @@ go get -u gopkg.in/bblfsh/client-go.v3/...
 ## Example
 ### CLI
 
-Allthough *clinet-go* is a library, this codebase also includes an example of `bblfsh-cli` application at [`./cmd/bblfsh-cli`](/cmd/bblfsh-cli). When [installed](#Installation), it allows to parse a single file, query it with XPath and print the resulting UAST structure immediatly. 
-See `$ bblfsh-cli -h` for list of all available CLI options.
+Allthough *client-go* is a library, this codebase also includes an example `bblfsh-cli` application at [`./cmd/bblfsh-cli`](/cmd/bblfsh-cli).  When [installed](#Installation), it allows you to parse a single file, query it with XPath and print the resulting UAST structure immediately.  See `$ bblfsh-cli -h` for list of all available CLI options.
 
 ### Code
 This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.
 
-If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server. 
+If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server.
 
 Go to the [quick start](https://github.com/bblfsh/bblfshd#quick-start) to discover how to run Babelfish with Docker.
 
@@ -58,8 +57,19 @@ func main() {
 		nodeAr = append(nodeAr, it.Node().(nodes.Node))
 	}
 
-	//alternative: encode UAST nodes to JSON (instead of YAML example below)
-	//data, err := json.MarshalIndent(nodeAr, "", "  ")
+	// The example below emits YAML.
+	//
+	// Alternative 1: encode UAST nodes to JSON.
+	//   data, err := json.MarshalIndent(nodeAr, "", "  ")
+	//
+	// Alternative 2: encode UAST nodes to protobuf.
+	//   import "gopkg.in/bblfsh/sdk.v2/uast/nodes/nodesproto"
+	//   ...
+	//   for _, node := range nodesAr {
+	//      err := nodesproto.WriteTo(os.Stdout, nodeAr) // check
+	//      ...
+	//   }
+	//
 	data, err := uastyml.Marshal(nodeAr)
 	if err != nil {
 		panic(err)
