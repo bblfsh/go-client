@@ -16,7 +16,7 @@ go get -u gopkg.in/bblfsh/client-go.v3/...
 ## Example
 ### CLI
 
-Although *clinet-go* is a library, this codebase also includes an example of `bblfsh-cli` application at [`./cmd/bblfsh-cli`](/cmd/bblfsh-cli). When [installed](#Installation), it allows to parse a single file, query it with XPath and print the resulting UAST structure immediately.
+Although *client-go* is a library, this codebase also includes an example of `bblfsh-cli` application at [`./cmd/bblfsh-cli`](/cmd/bblfsh-cli). When [installed](#Installation), it allows to parse a single file, query it with XPath and print the resulting UAST structure immediately.
 See `$ bblfsh-cli -h` for list of all available CLI options.
 
 ### Code
