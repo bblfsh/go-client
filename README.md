@@ -10,7 +10,7 @@ and for analysing UASTs with the functionality provided by [libuast](https://git
 The recommended way to install *go-client* is:
 
 ```sh
-go get -u github.com/bblfsh/go-client/...
+go get -u github.com/bblfsh/go-client/v4/...
 ```
 
 ## Example
@@ -32,8 +32,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/bblfsh/go-client"
-	"github.com/bblfsh/go-client/tools"
+	"github.com/bblfsh/go-client/v4"
+	"github.com/bblfsh/go-client/v4/tools"
 
 	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
 	"gopkg.in/bblfsh/sdk.v2/uast/yaml"
