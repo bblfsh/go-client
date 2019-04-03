@@ -19,8 +19,8 @@ import (
 
 	"github.com/jessevdk/go-flags"
 
-	"gopkg.in/bblfsh/client-go.v3"
-	"gopkg.in/bblfsh/client-go.v3/tools"
+	"github.com/bblfsh/go-client"
+	"github.com/bblfsh/go-client/tools"
 	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
 	"gopkg.in/bblfsh/sdk.v2/uast/nodes/nodesproto"
 	"gopkg.in/bblfsh/sdk.v2/uast/yaml"
