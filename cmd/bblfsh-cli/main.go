@@ -21,9 +21,9 @@ import (
 
 	"github.com/bblfsh/go-client/v4"
 	"github.com/bblfsh/go-client/v4/tools"
-	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
-	"gopkg.in/bblfsh/sdk.v2/uast/nodes/nodesproto"
-	"gopkg.in/bblfsh/sdk.v2/uast/yaml"
+	"github.com/bblfsh/sdk/v3/uast/nodes"
+	"github.com/bblfsh/sdk/v3/uast/nodes/nodesproto"
+	"github.com/bblfsh/sdk/v3/uast/yaml"
 )
 
 func main() {
