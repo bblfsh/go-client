@@ -4,13 +4,13 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/bblfsh/sdk/v3/uast/yaml"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/bblfsh/sdk.v2/uast/yaml"
 
 	"github.com/stretchr/testify/assert"
 
-	"gopkg.in/bblfsh/sdk.v2/uast"
-	"gopkg.in/bblfsh/sdk.v2/uast/nodes"
+	"github.com/bblfsh/sdk/v3/uast"
+	"github.com/bblfsh/sdk/v3/uast/nodes"
 )
 
 type Node = nodes.Node

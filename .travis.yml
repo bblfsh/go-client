@@ -2,8 +2,8 @@ language: go
 
 env:
   global:
-    - BBLFSHD_VERSION=v2.9.1
-    - BBLFSH_PYTHON_VERSION=v2.3.0
+    - BBLFSHD_VERSION=v2.12.1
+    - BBLFSH_PYTHON_VERSION=v2.9.0
     - GO111MODULE=on
 install:
   - |
