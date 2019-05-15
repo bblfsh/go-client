@@ -84,4 +84,8 @@ func testSupportedLanguagesRequest(t *testing.T, cli *Client) {
 	res, err := cli.NewSupportedLanguagesRequest().Do()
 	require.NoError(t, err)
 	require.NotEmpty(t, res)
+
+	res2, err := cli.NewSupportedLanguagesRequest().DoV2()
+	require.NoError(t, err)
+	require.NotEmpty(t, res2)
 }
