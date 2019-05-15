@@ -9,6 +9,7 @@ import (
 
 	"github.com/bblfsh/sdk/v3/driver"
 	derrors "github.com/bblfsh/sdk/v3/driver/errors"
+	"github.com/bblfsh/sdk/v3/driver/manifest"
 	protocol2 "github.com/bblfsh/sdk/v3/protocol"
 	"github.com/bblfsh/sdk/v3/uast/nodes"
 	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
@@ -114,7 +115,7 @@ func (r *ParseRequest) Do() (*protocol2.ParseResponse, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
-	return r.client.service2.Parse(r.ctx, &protocol2.ParseRequest{
+	return r.client.driver2.Parse(r.ctx, &protocol2.ParseRequest{
 		Content:  r.content,
 		Mode:     protocol2.Mode(r.options.Mode),
 		Language: r.options.Language,
@@ -131,7 +132,7 @@ type Node = nodes.Node
 //
 // ErrDriverFailure is returned if the native driver is malfunctioning.
 func (r *ParseRequest) UAST() (Node, string, error) {
-	ast, err := r.client.driver2.Parse(r.ctx, r.content, &r.options)
+	ast, err := r.client.driver.Parse(r.ctx, r.content, &r.options)
 	return ast, r.options.Language, err
 }
 
@@ -164,12 +165,9 @@ func (r *VersionRequest) Do() (*VersionResponse, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
-
-	resp, err := r.client.service1.Version(r.ctx, &protocol1.VersionRequest{})
+	resp, err := r.client.driver.Version(r.ctx)
 	if err != nil {
 		return nil, err
-	} else if resp.Status != protocol1.Ok {
-		return nil, errorStrings(resp.Errors)
 	}
 	return &VersionResponse{
 		Version: resp.Version,
@@ -193,17 +191,39 @@ func (r *SupportedLanguagesRequest) Context(ctx context.Context) *SupportedLangu
 // DriverManifest contains an information about a single Babelfish driver.
 type DriverManifest = protocol1.DriverManifest
 
-// Do performs the actual parsing by serializing the request, sending it to
-// bblfsd and waiting for the response.
+// Do performs the supported languages request and return information about available drivers.
 func (r *SupportedLanguagesRequest) Do() ([]DriverManifest, error) {
 	if r.err != nil {
 		return nil, r.err
 	}
-	resp, err := r.client.service1.SupportedLanguages(r.ctx, &protocol1.SupportedLanguagesRequest{})
+	list, err := r.client.driver.Languages(r.ctx)
 	if err != nil {
 		return nil, err
-	} else if resp.Status != protocol1.Ok {
-		return nil, errorStrings(resp.Errors)
 	}
-	return resp.Languages, nil
+	out := make([]DriverManifest, 0, len(list))
+	for _, m := range list {
+		dm := DriverManifest{
+			Name:     m.Name,
+			Language: m.Language,
+			Version:  m.Version,
+			Status:   string(m.Status),
+			Features: make([]string, 0, len(m.Features)),
+		}
+		for _, f := range m.Features {
+			dm.Features = append(dm.Features, string(f))
+		}
+		out = append(out, dm)
+	}
+	return out, nil
+}
+
+// DriverManifestV2 contains an information about a single Babelfish driver.
+type DriverManifestV2 = manifest.Manifest
+
+// DoV2 performs the supported languages request and return information about available drivers.
+func (r *SupportedLanguagesRequest) DoV2() ([]DriverManifestV2, error) {
+	if r.err != nil {
+		return nil, r.err
+	}
+	return r.client.driver.Languages(r.ctx)
 }
