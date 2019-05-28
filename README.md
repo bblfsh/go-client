@@ -30,23 +30,26 @@ Go to the [quick start](https://github.com/bblfsh/bblfshd#quick-start) to discov
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/bblfsh/go-client/v4"
 	"github.com/bblfsh/go-client/v4/tools"
 
 	"github.com/bblfsh/sdk/v3/uast/nodes"
-	"github.com/bblfsh/sdk/v3/uast/yaml"
+	"github.com/bblfsh/sdk/v3/uast/uastyaml"
 )
 
 func main() {
-	client, err := bblfsh.NewClient("0.0.0.0:9432")
+    ctx := context.Background()
+	client, err := bblfsh.NewClientContext(ctx, "0.0.0.0:9432")
 	if err != nil {
 		panic(err)
 	}
 
 	python := "import foo"
-	res, _, err := client.NewParseRequest().Language("python").Content(python).UAST()
+	res, _, err := client.NewParseRequest().Context(ctx).
+		Language("python").Content(python).UAST()
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +74,7 @@ func main() {
 	//      ...
 	//   }
 	//
-	data, err := uastyml.Marshal(nodeAr)
+	data, err := uastyaml.Marshal(nodeAr)
 	if err != nil {
 		panic(err)
 	}
