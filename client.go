@@ -37,6 +37,8 @@ func NewClientContext(ctx context.Context, endpoint string) (*Client, error) {
 }
 
 // NewClient is the same as NewClientContext, but assumes a default timeout for the connection.
+//
+// Deprecated: use NewClientContext instead
 func NewClient(endpoint string) (*Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

@@ -189,9 +189,13 @@ func (r *SupportedLanguagesRequest) Context(ctx context.Context) *SupportedLangu
 }
 
 // DriverManifest contains an information about a single Babelfish driver.
+//
+// Deprecated: see DoV2.
 type DriverManifest = protocol1.DriverManifest
 
 // Do performs the supported languages request and return information about available drivers.
+//
+// Deprecated: use DoV2 instead.
 func (r *SupportedLanguagesRequest) Do() ([]DriverManifest, error) {
 	if r.err != nil {
 		return nil, r.err
