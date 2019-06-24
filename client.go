@@ -22,12 +22,15 @@ type Client struct {
 }
 
 // NewClientContext returns a new bblfsh client given a bblfshd endpoint.
-func NewClientContext(ctx context.Context, endpoint string) (*Client, error) {
+func NewClientContext(ctx context.Context, endpoint string, options ...grpc.DialOption) (*Client, error) {
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithInsecure(),
 	}
 	opts = append(opts, protocol2.DialOptions()...)
+	// user-defined options should go last
+	// this allows to override any default option
+	opts = append(opts, options...)
 
 	conn, err := grpc.DialContext(ctx, endpoint, opts...)
 	if err != nil {
@@ -39,11 +42,11 @@ func NewClientContext(ctx context.Context, endpoint string) (*Client, error) {
 // NewClient is the same as NewClientContext, but assumes a default timeout for the connection.
 //
 // Deprecated: use NewClientContext instead
-func NewClient(endpoint string) (*Client, error) {
+func NewClient(endpoint string, options ...grpc.DialOption) (*Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return NewClientContext(ctx, endpoint)
+	return NewClientContext(ctx, endpoint, options...)
 }
 
 // NewClientWithConnection returns a new bblfsh client given a grpc connection.
