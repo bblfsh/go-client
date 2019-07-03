@@ -54,7 +54,7 @@ func main() {
 		panic(err)
 	}
 
-	query := "//*[@role='Import']"
+	query := "//*[self::uast:Import or self::uast:RuntimeImport]"
 	it, _ := tools.Filter(res, query)
 	var nodeAr nodes.Array
 	for it.Next() {
@@ -85,9 +85,7 @@ func main() {
 produces
 
 ```[
-   { '@type': "Import",
-      '@token': "import",
-      '@role': [Declaration, Import, Statement],
+   { '@type': "uast:RuntimeImport",
       '@pos': { '@type': "uast:Positions",
          start: { '@type': "uast:Position",
             offset: 0,
@@ -95,42 +93,14 @@ produces
             col: 1,
          },
       },
-      names: { '@type': "ImportFrom.names",
-         '@role': [Identifier, Import, Incomplete, Pathname],
-         'name_list': [
-            { '@type': "uast:RuntimeImport",
-               All: false,
-               Names: ~,
-               Path: { '@type': "uast:Alias",
-                  '@pos': { '@type': "uast:Positions",
-                  },
-                  Name: { '@type': "uast:Identifier",
-                     Name: "foo",
-                  },
-                  Node: {},
-               },
-               Target: ~,
-            },
-         ],
-      },
-   },
-   { '@type': "ImportFrom.names",
-      '@role': [Identifier, Import, Incomplete, Pathname],
-      'name_list': [
-         { '@type': "uast:RuntimeImport",
-            All: false,
-            Names: ~,
-            Path: { '@type': "uast:Alias",
-               '@pos': { '@type': "uast:Positions",
-               },
-               Name: { '@type': "uast:Identifier",
-                  Name: "foo",
-               },
-               Node: {},
-            },
-            Target: ~,
+      All: false,
+      Names: ~,
+      Path: { '@type': "uast:Identifier",
+         '@pos': { '@type': "uast:Positions",
          },
-      ],
+         Name: "foo",
+      },
+      Target: ~,
    },
 ]
 ```
