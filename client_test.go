@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 func newClient(t testing.TB) *Client {
@@ -14,7 +16,11 @@ func newClient(t testing.TB) *Client {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	cli, err := NewClientContext(ctx, "localhost:9432")
+	cli, err := NewClientContext(ctx, "localhost:9432",
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			PermitWithoutStream: false,
+		}),
+	)
 	if err == context.DeadlineExceeded {
 		t.Skip("bblfshd is not running")
 	}
