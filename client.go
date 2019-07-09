@@ -6,12 +6,26 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 
 	"github.com/bblfsh/sdk/v3/driver"
 	"github.com/bblfsh/sdk/v3/driver/manifest"
 	protocol2 "github.com/bblfsh/sdk/v3/protocol"
 	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
+)
+
+// defaultConnTimeout is a default connection timeout to bblfshd.
+const defaultConnTimeout = 5 * time.Second
+
+var (
+	// KeepalivePingInterval is a duration after this if the client doesn't see any activity it
+	// pings the server to see if the transport is still alive.
+	KeepalivePingInterval = 2 * time.Minute
+
+	// KeepalivePingWithoutStream is a boolean flag.
+	// If true, client sends keepalive pings even with no active RPCs.
+	KeepalivePingWithoutStream = true
 )
 
 // Client holds the public client API to interact with the bblfsh daemon.
@@ -26,6 +40,10 @@ func NewClientContext(ctx context.Context, endpoint string, options ...grpc.Dial
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 		grpc.WithInsecure(),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                KeepalivePingInterval,
+			PermitWithoutStream: KeepalivePingWithoutStream,
+		}),
 	}
 	opts = append(opts, protocol2.DialOptions()...)
 	// user-defined options should go last
@@ -43,7 +61,7 @@ func NewClientContext(ctx context.Context, endpoint string, options ...grpc.Dial
 //
 // Deprecated: use NewClientContext instead
 func NewClient(endpoint string, options ...grpc.DialOption) (*Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultConnTimeout)
 	defer cancel()
 
 	return NewClientContext(ctx, endpoint, options...)
@@ -51,7 +69,7 @@ func NewClient(endpoint string, options ...grpc.DialOption) (*Client, error) {
 
 // NewClientWithConnection returns a new bblfsh client given a grpc connection.
 func NewClientWithConnection(conn *grpc.ClientConn) (*Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultConnTimeout)
 	defer cancel()
 
 	return NewClientWithConnectionContext(ctx, conn)

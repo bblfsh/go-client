@@ -2,14 +2,12 @@ language: go
 
 env:
   global:
-    - BBLFSHD_VERSION=v2.12.1
-    - BBLFSH_PYTHON_VERSION=v2.9.0
     - GO111MODULE=on
 install:
   - |
     if [[ $TRAVIS_OS_NAME = linux ]]; then
-      docker run --privileged -d -p 9432:9432 --name bblfshd bblfsh/bblfshd:$BBLFSHD_VERSION
-      docker exec bblfshd bblfshctl driver install bblfsh/python-driver:$BBLFSH_PYTHON_VERSION
+      docker run --privileged -d -p 9432:9432 --name bblfshd bblfsh/bblfshd
+      docker exec bblfshd bblfshctl driver install bblfsh/python-driver
     fi
   - go mod download
 
