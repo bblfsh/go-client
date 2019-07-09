@@ -22,7 +22,7 @@ See `$ bblfsh-cli -h` for list of all available CLI options.
 ### Code
 This small example illustrates how to retrieve the [UAST](https://doc.bblf.sh/uast/specification.html) from a small Python script.
 
-If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server. 
+If you don't have a bblfsh server installed, please read the [getting started](https://doc.bblf.sh/using-babelfish/getting-started.html) guide, to learn more about how to use and deploy a bblfsh server.
 
 Go to the [quick start](https://github.com/bblfsh/bblfshd#quick-start) to discover how to run Babelfish with Docker.
 
@@ -32,17 +32,34 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/bblfsh/go-client/v4"
 	"github.com/bblfsh/go-client/v4/tools"
 
 	"github.com/bblfsh/sdk/v3/uast/nodes"
 	"github.com/bblfsh/sdk/v3/uast/uastyaml"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 func main() {
-    	ctx := context.Background()
-	client, err := bblfsh.NewClientContext(ctx, "0.0.0.0:9432")
+	ctx := context.Background()
+	client, err := bblfsh.NewClientContext(ctx, "0.0.0.0:9432",
+		// Set an extra grpc DialOptions to avoid "transport closing" errors when client is idle.
+		// Passing keepalive params here, you can overwrite defaults:
+		// Time: 2 minutes, PermitWithoutStream: true
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			// Time is a duration after this if the client doesn't see any activity it
+			// pings the server to see if the transport is still alive.
+			Time:                2 * time.Minute,
+
+			// PermitWithoutStream is a boolean flag.
+			// If true, client sends keepalive pings even with no active RPCs.
+			PermitWithoutStream: true,
+		}),
+	)
 	if err != nil {
 		panic(err)
 	}
