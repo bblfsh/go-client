@@ -2,17 +2,20 @@ package bblfsh
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
+
+	"github.com/bblfsh/sdk/v3/driver"
+	"github.com/bblfsh/sdk/v3/driver/manifest"
+	"github.com/bblfsh/sdk/v3/driver/server"
+	protocol2 "github.com/bblfsh/sdk/v3/protocol"
+	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
-
-	"github.com/bblfsh/sdk/v3/driver"
-	"github.com/bblfsh/sdk/v3/driver/manifest"
-	protocol2 "github.com/bblfsh/sdk/v3/protocol"
-	protocol1 "gopkg.in/bblfsh/sdk.v1/protocol"
 )
 
 const (
@@ -28,9 +31,11 @@ const (
 	keepalivePingWithoutStream = true
 )
 
+type getConnFunc func(ctx context.Context, language string) (*grpc.ClientConn, error)
+
 // Client holds the public client API to interact with the bblfsh daemon.
 type Client struct {
-	*grpc.ClientConn
+	conn    *grpc.ClientConn
 	driver2 protocol2.DriverClient
 	driver  driver.Driver
 }
@@ -50,11 +55,62 @@ func NewClientContext(ctx context.Context, endpoint string, options ...grpc.Dial
 	// this allows to override any default option
 	opts = append(opts, options...)
 
-	conn, err := grpc.DialContext(ctx, endpoint, opts...)
-	if err != nil {
-		return nil, err
+	switch {
+	case strings.Contains(endpoint, ","):
+		endpoints, err := parseEndpoints(endpoint)
+		if err != nil {
+			return nil, err
+		}
+		return NewClientWithConnectionsContext(func(ctx context.Context, lang string) (*grpc.ClientConn, error) {
+			e, ok := endpoints[lang]
+			if !ok {
+				return nil, server.ErrUnsupportedLanguage.New(lang)
+			}
+			conn, err := grpc.DialContext(ctx, e, opts...)
+			if err != nil {
+				return nil, err
+			}
+
+			return conn, nil
+		})
+	case strings.Contains(endpoint, "%s"):
+		return NewClientWithConnectionsContext(func(ctx context.Context, lang string) (*grpc.ClientConn, error) {
+			conn, err := grpc.DialContext(ctx, fmt.Sprintf(endpoint, lang), opts...)
+			if err != nil {
+				return nil, err
+			}
+
+			return conn, nil
+		})
+	default:
+		conn, err := grpc.DialContext(ctx, endpoint, opts...)
+		if err != nil {
+			return nil, err
+		}
+		return NewClientWithConnectionContext(ctx, conn)
 	}
-	return NewClientWithConnectionContext(ctx, conn)
+}
+
+func NewClientWithConnectionsContext(getConn getConnFunc) (*Client, error) {
+	dc := newMultipleDriverClient(getConn)
+
+	return &Client{
+		driver2: dc,
+		driver:  protocol2.DriverFromClient(dc, &multipleDriverHostClient{}),
+	}, nil
+}
+
+func parseEndpoints(endpoints string) (map[string]string, error) {
+	result := make(map[string]string)
+	pairs := strings.Split(endpoints, ",")
+	for _, p := range pairs {
+		vals := strings.Split(p, "=")
+		if len(vals) != 2 {
+			return nil, fmt.Errorf("formatting is broken in section: %q", p)
+		}
+		result[vals[0]] = vals[1]
+	}
+	return result, nil
 }
 
 // NewClient is the same as NewClientContext, but assumes a default timeout for the connection.
@@ -89,21 +145,21 @@ func NewClientWithConnectionContext(ctx context.Context, conn *grpc.ClientConn) 
 	if err == nil {
 		// supports v2
 		return &Client{
-			ClientConn: conn,
-			driver2:    protocol2.NewDriverClient(conn),
-			driver:     protocol2.AsDriver(conn),
+			conn:    conn,
+			driver2: protocol2.NewDriverClient(conn),
+			driver:  protocol2.AsDriver(conn),
 		}, nil
 	} else if !isServiceNotSupported(err) {
 		return nil, err
 	}
 	s1 := protocol1.NewProtocolServiceClient(conn)
 	return &Client{
-		ClientConn: conn,
-		driver2:    protocol2.NewDriverClient(conn),
+		conn:    conn,
+		driver2: protocol2.NewDriverClient(conn),
 		driver: &driverPartialV2{
 			// use only Parse from v2
 			Driver: protocol2.AsDriver(conn),
-			// use v1 for version and supported languages
+			// use v1 for version and supported langConns
 			service1: s1,
 		},
 	}, nil
@@ -128,7 +184,7 @@ func (d *driverPartialV2) Version(ctx context.Context) (driver.Version, error) {
 	}, nil
 }
 
-// Languages implements a driver.Host using v1 protocol.
+// langConns implements a driver.Host using v1 protocol.
 func (d *driverPartialV2) Languages(ctx context.Context) ([]manifest.Manifest, error) {
 	resp, err := d.service1.SupportedLanguages(ctx, &protocol1.SupportedLanguagesRequest{})
 	if err != nil {
@@ -163,7 +219,11 @@ func (c *Client) NewVersionRequest() *VersionRequest {
 	return &VersionRequest{ctx: context.Background(), client: c}
 }
 
-// NewSupportedLanguagesRequest is a parsing request to get the supported languages.
+// NewSupportedLanguagesRequest is a parsing request to get the supported langConns.
 func (c *Client) NewSupportedLanguagesRequest() *SupportedLanguagesRequest {
 	return &SupportedLanguagesRequest{ctx: context.Background(), client: c}
+}
+
+func (c *Client) Close() error {
+	return c.conn.Close()
 }

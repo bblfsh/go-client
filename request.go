@@ -175,7 +175,7 @@ func (r *VersionRequest) Do() (*VersionResponse, error) {
 	}, nil
 }
 
-// SupportedLanguagesRequest is a request to retrieve the supported languages.
+// SupportedLanguagesRequest is a request to retrieve the supported langConns.
 type SupportedLanguagesRequest struct {
 	ctx    context.Context
 	client *Client
@@ -193,7 +193,7 @@ func (r *SupportedLanguagesRequest) Context(ctx context.Context) *SupportedLangu
 // Deprecated: see DoV2.
 type DriverManifest = protocol1.DriverManifest
 
-// Do performs the supported languages request and return information about available drivers.
+// Do performs the supported langConns request and return information about available drivers.
 //
 // Deprecated: use DoV2 instead.
 func (r *SupportedLanguagesRequest) Do() ([]DriverManifest, error) {
@@ -224,7 +224,7 @@ func (r *SupportedLanguagesRequest) Do() ([]DriverManifest, error) {
 // DriverManifestV2 contains an information about a single Babelfish driver.
 type DriverManifestV2 = manifest.Manifest
 
-// DoV2 performs the supported languages request and return information about available drivers.
+// DoV2 performs the supported langConns request and return information about available drivers.
 func (r *SupportedLanguagesRequest) DoV2() ([]DriverManifestV2, error) {
 	if r.err != nil {
 		return nil, r.err

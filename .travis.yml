@@ -8,6 +8,7 @@ install:
     if [[ $TRAVIS_OS_NAME = linux ]]; then
       docker run --privileged -d -p 9432:9432 --name bblfshd bblfsh/bblfshd
       docker exec bblfshd bblfshctl driver install bblfsh/python-driver
+      docker exec bblfshd bblfshctl driver install bblfsh/go-driver
     fi
   - go mod download
 
@@ -21,7 +22,7 @@ script:
 
 jobs:
   include:
-    - {go: 1.11.x,  os: linux, sudo: required, dist: trusty, services: [docker]}
-    - {go: 1.12.x, os: linux, sudo: required, dist: trusty, services: [docker]}
-    - {go: 1.11.x,  os: osx, osx_image: xcode9.3}
-    - {go: 1.12.x, os: osx, osx_image: xcode9.3}
+    - {go: 1.12.x,  os: linux, sudo: required, dist: bionic, services: [docker]}
+    - {go: 1.13.x, os: linux, sudo: required, dist: bionic, services: [docker]}
+    - {go: 1.12.x,  os: osx, osx_image: xcode11.2}
+    - {go: 1.13.x, os: osx, osx_image: xcode11.2}
