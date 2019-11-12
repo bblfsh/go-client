@@ -1,0 +1,2 @@
+python: localhost:9432
+go: localhost:9432
