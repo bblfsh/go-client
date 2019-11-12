@@ -8,13 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newClient(t testing.TB) *Client {
+func newClient(t testing.TB, endpoint string) *Client {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	cli, err := NewClientContext(ctx, "localhost:9432")
+	cli, err := NewClientContext(ctx, endpoint)
 	if err == context.DeadlineExceeded {
 		t.Skip("bblfshd is not running")
 	}
@@ -34,13 +34,22 @@ var clientTests = []struct {
 }
 
 func TestClient(t *testing.T) {
-	cli := newClient(t)
+	cli := newClient(t, "localhost:9432")
 	for _, c := range clientTests {
 		c := c
 		t.Run(c.name, func(t *testing.T) {
 			c.test(t, cli)
 		})
 	}
+}
+
+func TestMultiConnections(t *testing.T) {
+	cli := newClient(t, "python=localhost:9432,go=localhost:9432")
+
+	// it's not a mistake that we run 2 same requests, it checks the actual map of already initialized connections
+	testNativeParseRequestCustom(t, cli, "python", "import foo")
+	testNativeParseRequestCustom(t, cli, "python", "import foo")
+	testNativeParseRequestCustom(t, cli, "go", "package main")
 }
 
 func testParseRequest(t *testing.T, cli *Client) {
@@ -67,7 +76,11 @@ func testParseRequestMode(t *testing.T, cli *Client) {
 }
 
 func testNativeParseRequest(t *testing.T, cli *Client) {
-	res, err := cli.NewParseRequest().Mode(Native).Language("python").Content("import foo").Do()
+	testNativeParseRequestCustom(t, cli, "python", "import foo")
+}
+
+func testNativeParseRequestCustom(t *testing.T, cli *Client, lang, content string) {
+	res, err := cli.NewParseRequest().Mode(Native).Language(lang).Content(content).Do()
 	require.NoError(t, err)
 
 	require.Equal(t, 0, len(res.Errors))
