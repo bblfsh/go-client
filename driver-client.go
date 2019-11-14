@@ -21,8 +21,9 @@ import (
 
 // multipleDriverClient is a DriverClient implementation, contains connection getter and a map[language]connection
 type multipleDriverClient struct {
-	getConn        getConnFunc
-	langConnDriver map[string]*connDriver
+	getConn getConnFunc
+	// key is a language
+	drivers map[string]*connDriver
 }
 
 type connDriver struct {
@@ -36,8 +37,8 @@ type multipleDriverHostClient struct{}
 // newMultipleDriverClient is a multipleDriverClient constructor
 func newMultipleDriverClient(getConn getConnFunc) *multipleDriverClient {
 	return &multipleDriverClient{
-		getConn:        getConn,
-		langConnDriver: make(map[string]*connDriver),
+		getConn: getConn,
+		drivers: make(map[string]*connDriver),
 	}
 }
 
@@ -48,7 +49,7 @@ func (c *multipleDriverClient) Parse(
 	opts ...grpc.CallOption) (*protocol2.ParseResponse, error) {
 	lang := in.Language
 
-	connD, ok := c.langConnDriver[lang]
+	connD, ok := c.drivers[lang]
 	if !ok {
 		gConn, err := c.getConn(ctx, lang)
 		if err != nil {
@@ -58,7 +59,7 @@ func (c *multipleDriverClient) Parse(
 			conn:   gConn,
 			driver: protocol2.NewDriverClient(gConn),
 		}
-		c.langConnDriver[lang] = connD
+		c.drivers[lang] = connD
 	}
 
 	return connD.driver.Parse(ctx, in, opts...)
@@ -66,13 +67,13 @@ func (c *multipleDriverClient) Parse(
 
 func (c *multipleDriverClient) Close() error {
 	var lastErr error
-	for k, v := range c.langConnDriver {
+	for k, v := range c.drivers {
 		if err := v.conn.Close(); err != nil {
 			lastErr = err
 		}
-		delete(c.langConnDriver, k)
+		delete(c.drivers, k)
 	}
-	c.langConnDriver = make(map[string]*connDriver)
+	c.drivers = make(map[string]*connDriver)
 	return lastErr
 }
 

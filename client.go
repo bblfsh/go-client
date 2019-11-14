@@ -95,6 +95,7 @@ func NewClientWithConnectionsContext(getConn getConnFunc) (*Client, error) {
 	dc := newMultipleDriverClient(getConn)
 
 	return &Client{
+		closer:  dc,
 		driver2: dc,
 		driver:  protocol2.DriverFromClient(dc, &multipleDriverHostClient{}),
 	}, nil
