@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
+	"gopkg.in/src-d/go-errors.v1"
 )
 
 const (
@@ -223,6 +224,13 @@ func (c *Client) NewVersionRequest() *VersionRequest {
 // NewSupportedLanguagesRequest is a parsing request to get the supported languages.
 func (c *Client) NewSupportedLanguagesRequest() *SupportedLanguagesRequest {
 	return &SupportedLanguagesRequest{ctx: context.Background(), client: c}
+}
+
+func (c *Client) GetConn() (*grpc.ClientConn, error) {
+	if conn, ok := c.closer.(*grpc.ClientConn); ok {
+		return conn, nil
+	}
+	return nil, errors.NewKind("multiple connections").New()
 }
 
 func (c *Client) Close() error {
