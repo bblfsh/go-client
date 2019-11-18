@@ -31,7 +31,7 @@ const (
 	keepalivePingWithoutStream = true
 )
 
-type getConnFunc func(ctx context.Context, language string) (*grpc.ClientConn, error)
+type ConnFunc func(ctx context.Context, language string) (*grpc.ClientConn, error)
 
 // Client holds the public client API to interact with the bblfsh daemon.
 type Client struct {
@@ -91,7 +91,7 @@ func NewClientContext(ctx context.Context, endpoint string, options ...grpc.Dial
 	}
 }
 
-func NewClientWithConnectionsContext(getConn getConnFunc) (*Client, error) {
+func NewClientWithConnectionsContext(getConn ConnFunc) (*Client, error) {
 	dc := newMultipleDriverClient(getConn)
 
 	return &Client{

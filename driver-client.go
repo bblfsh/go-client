@@ -21,7 +21,7 @@ import (
 
 // multipleDriverClient is a DriverClient implementation, contains connection getter and a map[language]connection
 type multipleDriverClient struct {
-	getConn getConnFunc
+	getConn ConnFunc
 	// key is a language
 	drivers map[string]*connDriver
 }
@@ -35,7 +35,7 @@ type connDriver struct {
 type multipleDriverHostClient struct{}
 
 // newMultipleDriverClient is a multipleDriverClient constructor
-func newMultipleDriverClient(getConn getConnFunc) *multipleDriverClient {
+func newMultipleDriverClient(getConn ConnFunc) *multipleDriverClient {
 	return &multipleDriverClient{
 		getConn: getConn,
 		drivers: make(map[string]*connDriver),
