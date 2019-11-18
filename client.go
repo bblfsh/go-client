@@ -2,6 +2,7 @@ package bblfsh
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -223,6 +224,13 @@ func (c *Client) NewVersionRequest() *VersionRequest {
 // NewSupportedLanguagesRequest is a parsing request to get the supported languages.
 func (c *Client) NewSupportedLanguagesRequest() *SupportedLanguagesRequest {
 	return &SupportedLanguagesRequest{ctx: context.Background(), client: c}
+}
+
+func (c *Client) GetConn() (*grpc.ClientConn, error) {
+	if conn, ok := c.closer.(*grpc.ClientConn); ok {
+		return conn, nil
+	}
+	return nil, errors.New("multiple connections")
 }
 
 func (c *Client) Close() error {
